@@ -1,19 +1,28 @@
 <template>
-  <div class="w-full h-full mx-auto bg-[var(--color-background)] rounded-lg shadow-md">
-    <Navbar/>
-    <ThemeSelector/>
+  <div class="flex flex-col min-h-screen bg-[var(--color-background)]">
+    <!-- Navbar -->
+    <Navbar />
+    
+    <!-- Main Content -->
+    <main class="flex-grow w-full mx-auto rounded-lg shadow-md">
+      <router-view />
+    </main>
+
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
 
 <script>
+import { defineComponent } from "vue";
+import Footer from "./components/Footer.vue";
 import Navbar from "./components/Navbar.vue";
-import ThemeSelector from "./pages/ThemeSelector.vue";
 
-export default {
+export default defineComponent({
   name: "App",
   components: {
- ThemeSelector, Navbar, // Register the component here
-  },
-};
+    Navbar, 
+    Footer
+  }
+});
 </script>
-
