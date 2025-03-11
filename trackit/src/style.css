@@ -1,6 +1,174 @@
 @import "tailwindcss";
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+@custom-variant dark (&:where(.dark, .dark *));
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+/* Default Theme */
+[data-theme="default"] {
+  --font-display: "Satoshi", "sans-serif";
+  --color-background: #f8f8f8;
+  --color-primary: #0366d6;
+  --color-highlights: #2188ff;
+  --color-headings: #24292f;
+  --color-border: #e1e4e8;
+  --color-gradient: linear-gradient(90deg, rgba(3, 102, 214, 1) 0%, rgba(33, 136, 255, 1) 100%);
+}
+
+/* Dark Theme */
+[data-theme="default-dark"] {
+  --font-display: "Satoshi", "sans-serif";
+  --color-background: #2f363d;
+  --color-primary: #0366d6;
+  --color-highlights: #2188ff;
+  --color-headings: #eaeaea;
+  --color-border: #444c56;
+  --color-gradient: linear-gradient(90deg, rgba(3, 102, 214, 1) 0%, rgba(33, 136, 255, 1) 100%);
+}
+
+/* Night Owl Theme */
+[data-theme="night-owl"] {
+  --font-display: "Roboto", "sans-serif";
+  --color-background: #011627;
+  --color-primary: #82aaff;
+  --color-highlights: #c792ea;
+  --color-headings: #ffffff;
+  --color-border: #1e293b;
+  --color-gradient: linear-gradient(90deg, #82aaff 0%, #c792ea 100%);
+}
+
+/* One Dark Pro Theme */
+[data-theme="one-dark-pro"] {
+  --font-display: "Courier New", "monospace";
+  --color-background: #282c34;
+  --color-primary: #61afef;
+  --color-highlights: #56b6c2;
+  --color-headings: #abb2bf;
+  --color-border: #2c313c;
+  --color-gradient: linear-gradient(90deg, #61afef 0%, #56b6c2 100%);
+}
+
+/* Material Theme */
+[data-theme="material"] {
+  --font-display: "Inter", "sans-serif";
+  --color-background: #263238;
+  --color-primary: #80cbc4;
+  --color-highlights: #ffcb6b;
+  --color-headings: #ffffff;
+  --color-border: #37474f;
+  --color-gradient: linear-gradient(90deg, #80cbc4 0%, #ffcb6b 100%);
+}
+
+/* Dracula Theme */
+[data-theme="dracula"] {
+  --font-display: "Fira Code", "monospace";
+  --color-background: #282a36;
+  --color-primary: #bd93f9;
+  --color-highlights: #50fa7b;
+  --color-headings: #f8f8f2;
+  --color-border: #44475a;
+  --color-gradient: linear-gradient(90deg, #bd93f9 0%, #50fa7b 100%);
+}
+
+/* SynthWave 84 Theme */
+[data-theme="synthwave-84"] {
+  --font-display: "Orbitron", "sans-serif";
+  --color-background: #2d0634;
+  --color-primary: #f6019d;
+  --color-highlights: #ffeb95;
+  --color-headings: #ffffff;
+  --color-border: #7a1f5c;
+  --color-gradient: linear-gradient(90deg, #f6019d 0%, #ffeb95 100%);
+}
+
+/* Tokyo Night Theme */
+[data-theme="tokyo-night"] {
+  --font-display: "Noto Sans", "sans-serif";
+  --color-background: #1a1b26;
+  --color-primary: #7aa2f7;
+  --color-highlights: #bb9af7;
+  --color-headings: #c0caf5;
+  --color-border: #24283b;
+  --color-gradient: linear-gradient(90deg, #7aa2f7 0%, #bb9af7 100%);
+}
+
+/* Andromeda Theme */
+[data-theme="andromeda"] {
+  --font-display: "JetBrains Mono", "monospace";
+  --color-background: #1e2029;
+  --color-primary: #a277ff;
+  --color-highlights: #ffca85;
+  --color-headings: #e1e1e6;
+  --color-border: #3b3f51;
+  --color-gradient: linear-gradient(90deg, #a277ff 0%, #ffca85 100%);
+}
+/* Cyberpunk Theme */
+[data-theme="cyberpunk"] {
+  --font-display: "Orbitron", "sans-serif";
+  --color-background: #0d0221;
+  --color-primary: #ff007f;
+  --color-highlights: #00ffff;
+  --color-headings: #ffcc00;
+  --color-border: #450068;
+  --color-gradient: linear-gradient(90deg, #ff007f 0%, #00ffff 100%);
+}
+
+/* Nord Theme */
+[data-theme="nord"] {
+  --font-display: "Poppins", "sans-serif";
+  --color-background: #2e3440;
+  --color-primary: #88c0d0;
+  --color-highlights: #81a1c1;
+  --color-headings: #eceff4;
+  --color-border: #3b4252;
+  --color-gradient: linear-gradient(90deg, #88c0d0 0%, #81a1c1 100%);
+}
+
+/* Solarized Light Theme */
+[data-theme="solarized-light"] {
+  --font-display: "Merriweather", "serif";
+  --color-background: #fdf6e3;
+  --color-primary: #268bd2;
+  --color-highlights: #b58900;
+  --color-headings: #657b83;
+  --color-border: #eee8d5;
+  --color-gradient: linear-gradient(90deg, #268bd2 0%, #b58900 100%);
+}
+
+/* Solarized Dark Theme */
+[data-theme="solarized-dark"] {
+  --font-display: "Merriweather", "serif";
+  --color-background: #002b36;
+  --color-primary: #839496;
+  --color-highlights: #b58900;
+  --color-headings: #fdf6e3;
+  --color-border: #073642;
+  --color-gradient: linear-gradient(90deg, #839496 0%, #b58900 100%);
+}
+
+/* Gruvbox Theme */
+[data-theme="gruvbox"] {
+  --font-display: "Ubuntu Mono", "monospace";
+  --color-background: #282828;
+  --color-primary: #fabd2f;
+  --color-highlights: #fe8019;
+  --color-headings: #ebdbb2;
+  --color-border: #504945;
+  --color-gradient: linear-gradient(90deg, #fabd2f 0%, #fe8019 100%);
+}
+
+/* Monokai Theme */
+[data-theme="monokai"] {
+  --font-display: "Menlo", "monospace";
+  --color-background: #272822;
+  --color-primary: #f92672;
+  --color-highlights: #a6e22e;
+  --color-headings: #f8f8f2;
+  --color-border: #75715e;
+  --color-gradient: linear-gradient(90deg, #f92672 0%, #a6e22e 100%);
 }
 

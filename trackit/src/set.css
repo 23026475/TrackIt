@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+/* Default Theme Variables */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+
+/* Base theme with mode variants */
+[data-theme="dracula"] {
+    &[data-mode="dark"] {
+      --color-bg: #282a36;
+      --color-text: #f8f8f2;
+      --color-primary: #ff79c6;
+    }
+    &[data-mode="light"] {
+      --color-bg: #f8f8f2;
+      --color-text: #282a36;
+      --color-primary: #bd93f9;
+    }
+  }
+  
+  [data-theme="monokai"] {
+    &[data-mode="dark"] {
+      --color-bg: #272822;
+      --color-text: #f8f8f2;
+      --color-primary: #f92672;
+    }
+    &[data-mode="light"] {
+      --color-bg: #f8f8f2;
+      --color-text: #272822;
+      --color-primary: #fd971f;
+    }
+  }
+  [data-theme="nord"] {
+    &[data-mode="dark"] {
+      --color-bg: #2e3440;
+      --color-text: #88c0d0;
+      --color-primary: #5e81ac;
+      --color-border:#3b4252;
+    }
+    &[data-mode="light"] {
+      --color-bg: #d8dee9;
+      --color-text: #eceff4;
+      --color-primary: #81a1c1;
+      --color-border:#4c566a;
+    }
+  }
+  
+  /* Add other themes following the same pattern */
+  
+  /* Shared transition */
+  [data-theme] {
+    transition: background-color 0.3s, color 0.15s;
+  }
+  
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  
