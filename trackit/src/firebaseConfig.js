@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs } from "firebase/firestore";
 import { ref } from "vue"; // Don't forget to import 'ref' for reactivity
 
 // Firebase Configuration
@@ -27,5 +27,5 @@ onAuthStateChanged(auth, (currentUser) => {
   user.value = currentUser;
 });
 
-export { auth, db, user };
+export { db, auth, doc, setDoc, getDoc, updateDoc, deleteDoc, collection, addDoc, getDocs };
 

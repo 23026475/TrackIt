@@ -41,7 +41,7 @@
   </nav>
 
   <!-- Mobile Menu -->
-  <div v-if="isMenuOpen" class="md:hidden flex flex-col items-center space-y-2 p-4 bg-[var(--color-background)] border-t border-[var(--color-border)] shadow-lg">
+  <div v-if="isMenuOpen" class="md:hidden flex flex-col items-center space-y-2 p-4 bg-[var(--color-background)] border-t border-[var(--color-border)] text-[var(--color-headings)] shadow-lg">
     <template v-if="user">
       <router-link to="/" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Projects</router-link>
       <router-link to="/sprintboard" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Sprint Board</router-link>
