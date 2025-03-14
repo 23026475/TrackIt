@@ -8,16 +8,17 @@ body {
   margin: 0;
 }
 
-/* Default Theme */
+/* Ocean Breeze Theme */
 [data-theme="default"] {
   --font-display: "Satoshi", "sans-serif";
-  --color-background: #f8f8f8;
-  --color-primary: #0366d6;
-  --color-highlights: #2188ff;
-  --color-headings: #24292f;
-  --color-border: #e1e4e8;
-  --color-gradient: linear-gradient(90deg, rgba(3, 102, 214, 1) 0%, rgba(33, 136, 255, 1) 100%);
+  --color-background: #e0f7fa; /* Light cyan for background */
+  --color-primary: #0097a7; /* Teal for primary elements */
+  --color-highlights: #00bcd4; /* Light turquoise for highlights */
+  --color-headings: #00796b; /* Dark teal for headings */
+  --color-border: #4db6ac; /* Softer teal for borders */
+  --color-gradient: linear-gradient(90deg, rgba(0, 151, 167, 1) 0%, rgba(0, 188, 212, 1) 100%); /* Gradient from deep teal to turquoise */
 }
+
 
 /* Dark Theme */
 [data-theme="default-dark"] {
