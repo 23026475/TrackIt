@@ -1,4 +1,4 @@
-import { db, doc, setDoc, getDoc, updateDoc } from "../firebase";
+import { db, doc, setDoc, getDoc, updateDoc, collection } from "../firebase";
 
 // Get User Profile Settings
 export const getUserSettings = async (userId) => {
@@ -24,4 +24,9 @@ export const getUserProgress = async (userId) => {
 export const updateUserProgress = async (userId, newProgress) => {
   const docRef = doc(db, `users/${userId}/profile/progress`);
   await updateDoc(docRef, newProgress);
+};
+export const getProjects = async (userId) => {
+  const projectsRef = collection(db, `users/${userId}/projects`);
+  const querySnapshot = await getDocs(projectsRef);
+  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };

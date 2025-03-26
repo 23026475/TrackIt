@@ -15,7 +15,7 @@
     <!-- Right Side -->
     <div class="hidden md:flex items-center space-x-4">
       <div v-if="user" class="relative">
-        <button @click="toggleDropdown" class="flex items-center justify-center w-8 h-8 bg-[var(--color-primary)] text-white rounded-full text-sm">
+        <button @click="toggleDropdown" class="flex items-center justify-center w-8 h-8 bg-[var(--color-primary)] text-[var(--color-headings)] rounded-full text-sm">
           {{ userInitials }}
         </button>
         <div v-if="isDropdownOpen" class="absolute right-0 mt-2 w-48 bg-[var(--color-background)] border border-[var(--color-border)] shadow-lg rounded-lg">
@@ -46,6 +46,7 @@
       <router-link to="/" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Projects</router-link>
       <router-link to="/sprintboard" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Sprint Board</router-link>
       <router-link to="/kanban" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Kanban</router-link>
+      <router-link to="/account" class="block px-4 py-2 text-sm font-bold hover:bg-[var(--color-highlights)]">Account</router-link>
       <router-link to="/progressboard" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Progress Board</router-link>
       <router-link to="/themeselector" class="font-bold hover:text-[var(--color-highlights)] hover:underline transition duration-300 cursor-pointer" @click="toggleMenu">Themes</router-link>
     </template>
