@@ -19,6 +19,8 @@ export const addProject = async (userId, projectData) => {
 // Get All Projects
 export const getProjects = async (userId) => {
   const projectsRef = collection(db, `users/${userId}/projects`);
+  console.log("User ID:", userId);
+  console.log("Project ID:", projectsRef);
   const snapshot = await getDocs(projectsRef);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 };
