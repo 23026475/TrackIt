@@ -12,11 +12,11 @@ export default function Navbar() {
     <nav className="flex items-center justify-between px-6 py-2 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors shadow-sm">
   {/* Left: Logo */}
   <div className="flex items-center gap-2">
-    <Image src={logo} alt="TrackIt Logo" width={32} height={32} />
+    <Image src={logo} alt="TrackIt Logo" width={48} height={48} /> {/* increased */}
   </div>
 
   {/* Center: Search */}
-  <div className="flex-1 mx-6">
+  <div className="mx-6 w-80">
     <div className="relative">
       <input
         type="text"
@@ -40,7 +40,6 @@ export default function Navbar() {
     </button>
   </div>
 </nav>
-
 
   );
 }
