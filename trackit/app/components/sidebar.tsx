@@ -18,39 +18,39 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`h-screen bg-background border-r border-border text-foreground transition-all duration-300 
-      ${isOpen ? "w-64" : "w-20"} flex flex-col`}
+  className={`h-screen bg-background border-r border-border text-foreground shadow-lg transition-all duration-300
+  ${isOpen ? "w-64" : "w-20"} flex flex-col`}
+>
+  {/* Toggle Button */}
+  <div className="flex justify-center py-2 border-b border-border">
+    <button
+      onClick={toggleSidebar}
+      className="p-2 rounded hover:bg-accent-light dark:hover:bg-accent-dark transition-colors"
+      aria-label="Toggle sidebar"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-        <h2
-          className={`font-bold text-lg transition-all duration-200 ${
-            !isOpen && "opacity-0 hidden"
-          }`}
-        >
-          TrackIt
-        </h2>
-        <button
-          onClick={toggleSidebar}
-          className="p-2 rounded hover:bg-muted transition"
-        >
-          {isOpen ? <X size={18} /> : <Menu size={18} />}
-        </button>
-      </div>
+      {isOpen ? <X size={18} /> : <Menu size={18} />}
+    </button>
+  </div>
 
-      {/* Nav Links */}
-      <nav className="flex-1 mt-4">
-        {navItems.map((item) => (
-          <Link
-            key={item.name}
-            href={item.href}
-            className="flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-muted transition rounded-md mx-2"
-          >
-            <item.icon size={20} className="mr-3 shrink-0" />
-            {isOpen && <span className="text-sm font-medium">{item.name}</span>}
-          </Link>
-        ))}
-      </nav>
-    </aside>
+  {/* Nav Links */}
+  <nav className="flex-1 border-t border-border overflow-y-auto">
+    {navItems.map((item) => (
+      <Link
+        key={item.name}
+        href={item.href}
+        className={`flex items-center px-4 py-3 text-muted-foreground hover:text-foreground hover:bg-accent-light dark:hover:bg-accent-dark transition-colors rounded-md mx-2 ${
+          !isOpen && "justify-center"
+        }`}
+      >
+        <item.icon size={20} className="shrink-0" />
+        {isOpen && <span className="ml-3 text-sm font-medium">{item.name}</span>}
+      </Link>
+    ))}
+  </nav>
+
+  {/* Bottom Gradient Indicator */}
+  <div className="h-1 bg-gradient-to-r from-primary to-secondary rounded-full m-2 mt-auto opacity-50 transition-all"></div>
+</aside>
+
   );
 }
