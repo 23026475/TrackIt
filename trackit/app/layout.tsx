@@ -15,20 +15,23 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="flex min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors">
+      <body className="bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark transition-colors min-h-screen">
         <ThemeProvider>
+          {/* Navbar spans full width */}
+          <Navbar />
+
           <div className="flex w-full min-h-screen">
             {/* Sidebar */}
             <Sidebar />
 
             {/* Main content area */}
-            <div className="flex-1 flex flex-col">
-              <Navbar />
-              <main className="flex-1 p-6 overflow-y-auto">{children}</main>
-            </div>
+            <main className="flex-1 p-6 overflow-y-auto bg-surface dark:bg-surface-dark transition-colors">
+              {children}
+            </main>
           </div>
         </ThemeProvider>
       </body>
     </html>
+
   );
 }
