@@ -5,3 +5,43 @@ html {
   scroll-behavior: smooth;
 }
 
+/* globals.css */
+
+/* Default: Light theme */
+:root {
+  --color-primary: #4F46E5;
+  --color-secondary: #6B7280;
+  --color-background: #F9FAFB;
+  --color-surface: #FFFFFF;
+  --color-accent: #22C55E;
+  --color-muted: #E5E7EB;
+  --color-text: #111827;
+}
+
+/* Dark theme */
+.dark {
+  --color-primary: #6366F1;
+  --color-secondary: #9CA3AF;
+  --color-background: #111827;
+  --color-surface: #1F2937;
+  --color-accent: #4ADE80;
+  --color-muted: #374151;
+  --color-text: #F9FAFB;
+}
+
+/* Utility classes to use CSS variables */
+.bg-primary { background-color: var(--color-primary); }
+.bg-secondary { background-color: var(--color-secondary); }
+.bg-background { background-color: var(--color-background); }
+.bg-surface { background-color: var(--color-surface); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-muted { background-color: var(--color-muted); }
+
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-background { color: var(--color-background); }
+.text-surface { color: var(--color-surface); }
+.text-accent { color: var(--color-accent); }
+.text-muted { color: var(--color-muted); }
+.text-text { color: var(--color-text); }
+
