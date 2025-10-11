@@ -25,7 +25,7 @@ export default function RootLayout({
             <Sidebar />
 
             {/* Main content area */}
-            <main className="flex-1 p-6 overflow-y-auto bg-surface dark:bg-surface-dark transition-colors">
+            <main className="flex-1 overflow-y-auto bg-surface dark:bg-surface-dark transition-colors">
               {children}
             </main>
           </div>
