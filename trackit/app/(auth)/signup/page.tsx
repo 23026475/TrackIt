@@ -10,9 +10,9 @@ import { auth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/ui/button";
 import Image from "next/image";
-import { Eye, EyeOff } from "lucide-react"; // 👁️ Icons for show/hide
-import logo from "../components/images/logo.png";
-import googleIcon from "../components/images/googleIcon.png";
+import { Eye, EyeOff } from "lucide-react";
+import logo from "../../components/images/logo.png";
+import googleIcon from "../../components/images/googleIcon.png";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -24,13 +24,23 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
-  // ✅ Email & Password Signup
+  const isStrongPassword = (pwd: string) => {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(pwd);
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      setError(
+        "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"
+      );
       return;
     }
 
@@ -45,7 +55,6 @@ export default function SignupPage() {
     }
   };
 
-  // ✅ Google Signup
   const handleGoogleSignup = async () => {
     setLoading(true);
     setError("");
@@ -62,12 +71,11 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-surface dark:bg-surface-dark transition-colors">
+    <div className="flex min-h-screen items-center justify-center w-[80%] bg-surface dark:bg-surface-dark transition-colors">
       <form
         onSubmit={handleSignup}
-        className="p-8 rounded-3xl bg-surface-alt dark:bg-surface-alt-dark shadow-xl space-y-6 w-full max-w-sm transition-colors"
+        className="p-8 rounded-3xl bg-surface-alt dark:bg-surface-alt-dark shadow-xl space-y-6 w-full max-w-md transition-colors"
       >
-        {/* Logo */}
         <div className="flex flex-col items-center gap-2">
           <Image src={logo} alt="TrackIt Logo" width={90} height={90} />
         </div>
@@ -80,7 +88,6 @@ export default function SignupPage() {
           <p className="text-sm text-red-500 text-center font-medium">{error}</p>
         )}
 
-        {/* Email */}
         <input
           type="email"
           placeholder="Email"
@@ -90,7 +97,6 @@ export default function SignupPage() {
           required
         />
 
-        {/* Password */}
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -109,7 +115,6 @@ export default function SignupPage() {
           </button>
         </div>
 
-        {/* Confirm Password */}
         <div className="relative">
           <input
             type={showConfirmPassword ? "text" : "password"}
@@ -128,7 +133,6 @@ export default function SignupPage() {
           </button>
         </div>
 
-        {/* Google Sign-Up */}
         <button
           type="button"
           onClick={handleGoogleSignup}
@@ -148,6 +152,20 @@ export default function SignupPage() {
         >
           {loading ? "Creating account..." : "Sign Up"}
         </Button>
+
+        {/* Only Sign-In redirection */}
+        <div className="flex justify-center text-sm mt-2">
+          <p>
+            Already have an account?{" "}
+            <button
+              type="button"
+              className="text-primary dark:text-primary-dark font-medium hover:underline"
+              onClick={() => router.push("/login")}
+            >
+              Sign In
+            </button>
+          </p>
+        </div>
       </form>
     </div>
   );
