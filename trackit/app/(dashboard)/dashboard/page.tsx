@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "../../components/ui/button";
 import Image from "next/image";
 import Sidebar from "../../components/sidebar";
-import logo from "../components/images/logo.png"; // ✅ your logo path
+import logo from "../../components/images/googleIcon.png"; // ✅ your logo path
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 
@@ -34,34 +34,11 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
-      {/* Sidebar */}
-      <Sidebar />
+
+      
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Navbar */}
-        <nav className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/50 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <Image src={logo} alt="TrackIt Logo" width={36} height={36} className="rounded-md" />
-            <h1 className="text-xl font-bold">TrackIt Dashboard</h1>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              className="p-2 rounded hover:bg-muted transition"
-            >
-              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
-            </button>
-            <span className="text-sm text-muted-foreground">{user.email}</span>
-            <Button
-              onClick={handleLogout}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Logout
-            </Button>
-          </div>
-        </nav>
 
         {/* Main Section */}
         <main className="flex-1 p-8">
