@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { auth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
-import { Button } from "../components/ui/button";
+import { Button } from "../../components/ui/button";
 import Image from "next/image";
-import Sidebar from "../components/sidebar";
+import Sidebar from "../../components/sidebar";
 import logo from "../components/images/logo.png"; // ✅ your logo path
 import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
