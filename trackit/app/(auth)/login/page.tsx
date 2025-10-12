@@ -6,8 +6,9 @@ import { auth } from "../../lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/ui/button";
 import Image from "next/image";
-import logo from "../components/images/logo.png"; // ✅ your logo path
-import googleIcon from "../components/images/googleIcon.png"; // ✅ your Google logo path   
+import logo from "../../components/images/logo.png";          // ✅ correct logo path
+import googleIcon from "../../components/images/googleIcon.png"; // ✅ correct Google icon path
+
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
