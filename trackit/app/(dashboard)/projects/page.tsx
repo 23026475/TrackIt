@@ -38,24 +38,24 @@ export default function ProjectsPage() {
   const getTierColor = (tier: number) => {
     switch (tier) {
       case 1:
-        return "bg-green-500";
+        return "bg-accent";
       case 2:
-        return "bg-blue-500";
+        return "bg-primary";
       case 3:
-        return "bg-orange-500";
+        return "bg-secondary";
       case 4:
-        return "bg-red-500";
+        return "bg-hover";
       default:
-        return "bg-gray-500";
+        return "bg-muted";
     }
   };
 
   if (!projects.length) {
     return (
-      <div className="p-6 text-center text-gray-400 relative min-h-[70vh]">
+      <div className="p-6 text-center text-text-muted dark:text-text-muted-dark relative min-h-[70vh]">
         <p>No projects found. Create one to get started 🚀</p>
         <button
-          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center"
+          className="fixed bottom-8 right-8 bg-primary dark:bg-primary-dark hover:bg-hover dark:hover:bg-hover-dark text-text-dark dark:text-text-dark p-4 rounded-full shadow-lg flex items-center justify-center"
           onClick={() => router.push("/dashboard/projects/add")}
         >
           <PlusCircleIcon size={28} />
@@ -74,11 +74,7 @@ export default function ProjectsPage() {
         {projects.map((project) => (
           <motion.div
             key={project.id}
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className={`relative rounded-xl shadow-md bg-white/10 backdrop-blur-sm border border-gray-700 transition-transform hover:scale-[1.02] hover:shadow-lg cursor-pointer overflow-hidden`}
+            className="relative rounded-xl shadow-md bg-surface dark:bg-surface-dark border border-border-muted dark:border-border-dark transition-transform hover:scale-[1.02] hover:shadow-lg cursor-pointer overflow-hidden"
             onClick={() =>
               setExpandedId(expandedId === project.id ? null : project.id)
             }
@@ -103,10 +99,11 @@ export default function ProjectsPage() {
 
             {/* Content */}
             <div className="p-5">
-              <h2 className="text-lg font-bold text-white mb-1">
+              <h2 className="text-lg font-bold text-text dark:text-text-dark mb-1">
                 {project.name}
               </h2>
-              <p className="text-sm text-gray-400 mb-2">
+
+              <p className="text-sm text-text-muted dark:text-text-muted-dark mb-2">
                 Due:{" "}
                 {project.dueDate
                   ? new Date(project.dueDate).toLocaleDateString()
@@ -119,7 +116,8 @@ export default function ProjectsPage() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 text-sm text-gray-300 space-y-2 overflow-hidden"
+                    transition={{ duration: 0.25 }}
+                    className="mt-3 text-sm text-text-muted dark:text-text-muted-dark space-y-2 overflow-hidden"
                   >
                     <p>
                       <strong>Description:</strong>{" "}
@@ -145,7 +143,7 @@ export default function ProjectsPage() {
                         <a
                           href={project.repoLinks[0]}
                           target="_blank"
-                          className="text-blue-400 hover:underline"
+                          className="text-primary dark:text-primary-dark hover:underline"
                         >
                           View on GitHub
                         </a>
@@ -161,7 +159,7 @@ export default function ProjectsPage() {
 
       {/* Floating Add Button */}
       <button
-        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center"
+        className="fixed bottom-8 right-8 bg-primary dark:bg-primary-dark hover:bg-hover dark:hover:bg-hover-dark text-text-dark dark:text-text-dark p-4 rounded-full shadow-lg flex items-center justify-center"
         onClick={() => router.push("/dashboard/projects/add")}
       >
         <PlusCircleIcon size={28} />
