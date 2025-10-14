@@ -1,26 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db, auth } from "@/app/lib/firebase";
+import { db } from "@/app/lib/firebase";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { auth } from "@/app/lib/firebase";
+import { motion, AnimatePresence } from "framer-motion";
+import { PlusCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
-import { Plus, Github, Calendar, Layers } from "lucide-react";
-
-interface Project {
-  id: string;
-  name: string;
-  dueDate: string;
-  tier: string;
-  comments: string;
-  techStack?: string;
-  repoLink?: string;
-  createdAt?: any;
-}
 
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -28,117 +18,153 @@ export default function ProjectsPage() {
       const user = auth.currentUser;
       if (!user) return;
 
-      try {
-        const q = query(
-          collection(db, "projects"),
-          where("ownerId", "==", user.uid),
-          orderBy("createdAt", "desc")
-        );
+      const q = query(
+        collection(db, "projects"),
+        where("ownerId", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
 
-        const querySnapshot = await getDocs(q);
-        const fetchedProjects: Project[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Omit<Project, "id">),
-        }));
-
-        setProjects(fetchedProjects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-      } finally {
-        setLoading(false);
-      }
+      const snapshot = await getDocs(q);
+      const projectList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setProjects(projectList);
     };
 
     fetchProjects();
   }, []);
 
-  if (loading) {
+  const getTierColor = (tier: number) => {
+    switch (tier) {
+      case 1:
+        return "bg-green-500";
+      case 2:
+        return "bg-blue-500";
+      case 3:
+        return "bg-orange-500";
+      case 4:
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
+    }
+  };
+
+  if (!projects.length) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
-        Loading projects...
+      <div className="p-6 text-center text-gray-400 relative min-h-[70vh]">
+        <p>No projects found. Create one to get started 🚀</p>
+        <button
+          className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center"
+          onClick={() => router.push("/dashboard/projects/add")}
+        >
+          <PlusCircleIcon size={28} />
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-surface-alt dark:bg-surface-alt-dark min-h-screen transition-colors relative">
+    <div className="p-6 bg-surface-alt dark:bg-surface-alt-dark min-h-full transition-colors relative">
       <h1 className="text-2xl font-bold text-text dark:text-text-dark mb-6">
-        Your Projects
+        All Projects
       </h1>
 
-      {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center text-center mt-20">
-          <p className="text-gray-500 dark:text-gray-400 mb-4">
-            No projects yet. Let’s get started!
-          </p>
-          <button
-            onClick={() => router.push("/projects/add")}
-            className="px-4 py-2 bg-primary text-white rounded-lg shadow-md hover:bg-primary-dark transition"
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project) => (
+          <motion.div
+            key={project.id}
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className={`relative rounded-xl shadow-md bg-white/10 backdrop-blur-sm border border-gray-700 transition-transform hover:scale-[1.02] hover:shadow-lg cursor-pointer overflow-hidden`}
+            onClick={() =>
+              setExpandedId(expandedId === project.id ? null : project.id)
+            }
           >
-            + Add Project
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.id}
-              whileHover={{ scale: 1.02 }}
-              className="p-5 bg-white dark:bg-gray-800 rounded-2xl shadow-md hover:shadow-lg transition cursor-pointer"
-              onClick={() => console.log("Clicked project:", project.id)}
+            {/* Tier Tag */}
+            <div
+              className={`absolute top-3 right-3 px-3 py-1 text-xs font-semibold rounded-full text-white ${getTierColor(
+                project.tierLevel
+              )}`}
             >
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Tier {project.tierLevel}
+            </div>
+
+            {/* Optional Banner */}
+            {project.bannerUrl && (
+              <img
+                src={project.bannerUrl}
+                alt={`${project.name} banner`}
+                className="w-full h-32 object-cover rounded-t-xl"
+              />
+            )}
+
+            {/* Content */}
+            <div className="p-5">
+              <h2 className="text-lg font-bold text-white mb-1">
                 {project.name}
               </h2>
-
-              <div className="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
-                <Calendar className="w-4 h-4 mr-1" />
-                <span>Due {new Date(project.dueDate).toLocaleDateString()}</span>
-              </div>
-
-              <div className="flex items-center mb-3">
-                <Layers className="w-4 h-4 mr-1 text-gray-400" />
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    project.tier === "Tier 1"
-                      ? "bg-green-100 text-green-800"
-                      : project.tier === "Tier 2"
-                      ? "bg-blue-100 text-blue-800"
-                      : project.tier === "Tier 3"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
-                  }`}
-                >
-                  {project.tier}
-                </span>
-              </div>
-
-              <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
-                {project.comments || "No comments yet."}
+              <p className="text-sm text-gray-400 mb-2">
+                Due:{" "}
+                {project.dueDate
+                  ? new Date(project.dueDate).toLocaleDateString()
+                  : "No due date"}
               </p>
 
-              {project.repoLink && (
-                <a
-                  href={project.repoLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-primary hover:underline text-sm"
-                >
-                  <Github className="w-4 h-4 mr-1" /> Repo
-                </a>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      )}
+              <AnimatePresence>
+                {expandedId === project.id && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="mt-3 text-sm text-gray-300 space-y-2 overflow-hidden"
+                  >
+                    <p>
+                      <strong>Description:</strong>{" "}
+                      {project.description || "No description"}
+                    </p>
+                    <p>
+                      <strong>Priority:</strong> {project.priority}
+                    </p>
+                    <p>
+                      <strong>Type:</strong> {project.type}
+                    </p>
+                    <p>
+                      <strong>Tech Stack:</strong>{" "}
+                      {project.techStack?.join(", ") || "None"}
+                    </p>
+                    <p>
+                      <strong>Comments:</strong>{" "}
+                      {project.comment || "No comments yet."}
+                    </p>
+                    {project.repoLinks?.length > 0 && (
+                      <p>
+                        <strong>Repo:</strong>{" "}
+                        <a
+                          href={project.repoLinks[0]}
+                          target="_blank"
+                          className="text-blue-400 hover:underline"
+                        >
+                          View on GitHub
+                        </a>
+                      </p>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        ))}
+      </div>
 
       {/* Floating Add Button */}
       <button
-        onClick={() => router.push("/projects/add")}
-        className="fixed bottom-6 right-6 bg-primary text-white p-4 rounded-full shadow-xl hover:scale-105 transition"
-        aria-label="Add Project"
+        className="fixed bottom-8 right-8 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg flex items-center justify-center"
+        onClick={() => router.push("/dashboard/projects/add")}
       >
-        <Plus className="w-6 h-6" />
+        <PlusCircleIcon size={28} />
       </button>
     </div>
   );
