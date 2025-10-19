@@ -19,9 +19,12 @@ export default function AddProjectPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -51,19 +54,10 @@ export default function AddProjectPage() {
         repoLinks: [formData.repoLink],
         bannerUrl: formData.bannerUrl || null,
       });
-      setMessage("✅ Project added successfully!");
-      setFormData({
-        name: "",
-        description: "",
-        tierLevel: "1",
-        dueDate: "",
-        comment: "",
-        priority: "medium",
-        type: "personal",
-        techStack: "",
-        repoLink: "",
-        bannerUrl: "",
-      });
+
+      // Show popup instead of message inline
+      setShowPopup(true);
+
     } catch (error: any) {
       console.error("Error adding project:", error);
       setMessage("❌ Failed to add project. Check console.");
@@ -72,8 +66,28 @@ export default function AddProjectPage() {
     }
   };
 
+  const handleAddAnother = () => {
+    setFormData({
+      name: "",
+      description: "",
+      tierLevel: "1",
+      dueDate: "",
+      comment: "",
+      priority: "medium",
+      type: "personal",
+      techStack: "",
+      repoLink: "",
+      bannerUrl: "",
+    });
+    setShowPopup(false);
+  };
+
+  const handleGoBack = () => {
+    window.location.href = "/dashboard/projects";
+  };
+
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-gray-800 text-white rounded-2xl shadow-lg">
+    <div className="max-w-2xl mx-auto mt-10 p-6 bg-surface-alt dark:bg-surface-alt-dark text-text dark:text-text-dark rounded-2xl shadow-lg relative">
       <h1 className="text-2xl font-semibold mb-6">Create a New Project</h1>
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Project Name */}
@@ -84,19 +98,19 @@ export default function AddProjectPage() {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             required
           />
         </div>
 
-        {/* Project Description */}
+        {/* Description */}
         <div>
           <label className="block mb-1">Description</label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             placeholder="Briefly describe your project..."
           />
         </div>
@@ -108,7 +122,7 @@ export default function AddProjectPage() {
             name="tierLevel"
             value={formData.tierLevel}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
           >
             <option value="1">Tier 1</option>
             <option value="2">Tier 2</option>
@@ -123,10 +137,10 @@ export default function AddProjectPage() {
           <input
             type="date"
             name="dueDate"
-            min={new Date().toISOString().split("T")[0]} // sets minimum to today
+            min={new Date().toISOString().split("T")[0]}
             value={formData.dueDate}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             required
           />
         </div>
@@ -138,7 +152,7 @@ export default function AddProjectPage() {
             name="priority"
             value={formData.priority}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -153,7 +167,7 @@ export default function AddProjectPage() {
             name="type"
             value={formData.type}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
           >
             <option value="personal">Personal</option>
             <option value="work">Work</option>
@@ -170,7 +184,7 @@ export default function AddProjectPage() {
             name="techStack"
             value={formData.techStack}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             placeholder="Next.js, Firebase, Tailwind"
           />
         </div>
@@ -183,12 +197,12 @@ export default function AddProjectPage() {
             name="repoLink"
             value={formData.repoLink}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             placeholder="https://github.com/..."
           />
         </div>
 
-        {/* Optional Banner */}
+        {/* Banner URL */}
         <div>
           <label className="block mb-1">Banner Image URL (optional)</label>
           <input
@@ -196,33 +210,56 @@ export default function AddProjectPage() {
             name="bannerUrl"
             value={formData.bannerUrl}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
             placeholder="https://example.com/banner.png"
           />
         </div>
 
-        {/* Initial Comment */}
+        {/* Comment */}
         <div>
           <label className="block mb-1">Initial Comment / Notes</label>
           <textarea
             name="comment"
             value={formData.comment}
             onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700"
-            placeholder="Any important notes or goals for this project..."
+            className="w-full p-2 rounded bg-surface dark:bg-surface-dark border border-border-muted"
+            placeholder="Any important notes..."
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded mt-3"
+          className="w-full py-2 rounded mt-3 text-white bg-primary hover:bg-primary-dark"
         >
           {loading ? "Adding..." : "Add Project"}
         </button>
       </form>
 
-      {message && <p className="mt-4 text-center">{message}</p>}
+      {/* Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-surface-alt dark:bg-surface-alt-dark p-6 rounded-lg shadow-lg text-center max-w-sm w-full">
+            <h2 className="text-xl font-semibold mb-4">✅ Project added successfully!</h2>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={handleAddAnother}
+                className="bg-secondary hover:bg-secondary-dark text-white py-2 px-4 rounded"
+              >
+                Add Another Project
+              </button>
+              <button
+                onClick={handleGoBack}
+                className="bg-accent hover:bg-accent-dark text-white py-2 px-4 rounded"
+              >
+                Go Back to Projects
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {message && !showPopup && <p className="mt-4 text-center">{message}</p>}
     </div>
   );
 }
