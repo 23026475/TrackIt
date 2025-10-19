@@ -4,6 +4,7 @@ import { useState } from "react";
 import { auth } from "@/app/lib/firebase";
 import { createProject } from "@/app/lib/firestore";
 
+
 export default function AddProjectPage() {
   const [formData, setFormData] = useState({
     name: "",
@@ -83,7 +84,7 @@ export default function AddProjectPage() {
   };
 
   const handleGoBack = () => {
-    window.location.href = "/dashboard/projects";
+    window.location.href = "/projects";
   };
 
   return (
