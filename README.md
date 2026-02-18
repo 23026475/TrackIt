@@ -4,7 +4,7 @@ The Task Manager Web App is a productivity tool designed for organizing tasks, p
 
 Tech Stack
 
-Frontend: React.js
+Frontend: Next.js
 
 Backend & Database: Firebase (Firestore, Authentication, Hosting)
 
@@ -12,4 +12,4 @@ Styling: Tailwind CSS
 
 State Management: React Context API
 
-Deployment: Firebase Hosting
+Deployment: Supabase
