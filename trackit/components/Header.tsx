@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from 'next/navigation'
-import { createClient } from '../app/lib/supabase/client'
+import { createClient } from '@/app/lib/supabase/client'
 import { ThemeToggle } from './ThemeToggle'
 import { LogOut } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -35,14 +35,7 @@ export function Header() {
   return (
     <header className="border-b border-border bg-background/95">
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo - No click functionality */}
-          <div className="flex items-center">
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              TrackIt
-            </span>
-          </div>
-
+        <div className="flex h-16 items-center justify-end">
           {/* Right section - Email initial, theme toggle, logout */}
           <div className="flex items-center gap-3">
             {/* Email initial avatar */}
