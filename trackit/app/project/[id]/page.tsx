@@ -7,6 +7,7 @@ import { Project } from '@/app/types/database'
 import { ProjectComments } from '@/components/ProjectComments'
 import { ArrowLeft, Edit, Trash2, Github, Globe, Calendar, Code2, CheckCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
+import { ProjectComponents } from '@/components/ProjectComponents'
 
 export default function ProjectPage() {
   const { id } = useParams()
@@ -252,6 +253,32 @@ export default function ProjectPage() {
           <p className="text-sm text-muted-foreground">Plan and track sprints</p>
         </Link>
       </div>
+
+      {/* Tech Stack */}
+      {project.tech_stack && project.tech_stack.length > 0 && (
+        <div className="bg-card border border-border rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Code2 className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold">Tech Stack</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {project.tech_stack.map((tech) => (
+              <span
+                key={tech}
+                className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-foreground rounded-full text-sm"
+              >
+                {tech}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Components Section */}
+      <ProjectComponents projectId={project.id} />
+
+      {/* Comments Section */}
+      <ProjectComments projectId={project.id} />
     </div>
   )
 }
