@@ -16,11 +16,13 @@ export interface Database {
           name: string
           description: string | null
           priority: 'low' | 'medium' | 'high'
-          status: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance'
+          status: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance' | 'archived'
           tech_stack: string[] | null
           github_url: string | null
           live_url: string | null
           deadline: string | null
+          archived: boolean | null
+          archived_at: string | null
           created_at: string
           updated_at: string
         }
@@ -30,11 +32,13 @@ export interface Database {
           name: string
           description?: string | null
           priority?: 'low' | 'medium' | 'high'
-          status?: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance'
+          status?: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance' | 'archived'
           tech_stack?: string[] | null
           github_url?: string | null
           live_url?: string | null
           deadline?: string | null
+          archived?: boolean | null
+          archived_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -44,11 +48,13 @@ export interface Database {
           name?: string
           description?: string | null
           priority?: 'low' | 'medium' | 'high'
-          status?: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance'
+          status?: 'planning' | 'active' | 'paused' | 'completed' | 'maintenance' | 'archived'
           tech_stack?: string[] | null
           github_url?: string | null
           live_url?: string | null
           deadline?: string | null
+          archived?: boolean | null
+          archived_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -75,6 +81,7 @@ export interface Database {
           labels: string[] | null
           due_date: string | null
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -89,6 +96,7 @@ export interface Database {
           labels?: string[] | null
           due_date?: string | null
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -103,6 +111,7 @@ export interface Database {
           labels?: string[] | null
           due_date?: string | null
           created_at?: string
+          updated_at?: string
         }
         Relationships: [
           {
@@ -243,6 +252,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "components_project_id_fkey"
+            columns: ["project_id"]
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {
