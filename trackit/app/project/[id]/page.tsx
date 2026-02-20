@@ -5,9 +5,11 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase/client'
 import { Project } from '@/app/types/database'
 import { ProjectComments } from '@/components/ProjectComments'
-import { ArrowLeft, Edit, Trash2, Github, Globe, Calendar, Code2, CheckCircle, Clock } from 'lucide-react'
-import Link from 'next/link'
 import { ProjectComponents } from '@/components/ProjectComponents'
+import { DeleteProjectModal } from '@/components/DeleteProjectModal'
+import { ArchiveProjectModal } from '@/components/ArchiveProjectModal'
+import { ArrowLeft, Edit, Trash2, Github, Globe, Calendar, Code2, CheckCircle, Clock, Archive } from 'lucide-react'
+import Link from 'next/link'
 
 export default function ProjectPage() {
   const { id } = useParams()
@@ -15,7 +17,8 @@ export default function ProjectPage() {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showArchiveModal, setShowArchiveModal] = useState(false)
   const supabase = createClient()
 
   useEffect(() => {
@@ -39,25 +42,6 @@ export default function ProjectPage() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this project? This action cannot be undone.')) return
-
-    setIsDeleting(true)
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-      router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200'
@@ -65,6 +49,7 @@ export default function ProjectPage() {
       case 'paused': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-200'
       case 'completed': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-200'
       case 'maintenance': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-200'
+      case 'archived': return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
       default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
     }
   }
@@ -103,29 +88,43 @@ export default function ProjectPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header with close button */}
+      <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+          title="Go back"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back
+          <span>Back</span>
         </button>
         
         <div className="flex items-center gap-2">
+          {project.status !== 'archived' && (
+            <button
+              onClick={() => setShowArchiveModal(true)}
+              className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+              title="Archive project"
+            >
+              <Archive className="h-4 w-4" />
+              <span className="hidden sm:inline">Archive</span>
+            </button>
+          )}
           <Link
             href={`/project/${id}/edit`}
-            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            title="Edit project"
           >
-            <Edit className="h-5 w-5" />
+            <Edit className="h-4 w-4" />
+            <span className="hidden sm:inline">Edit</span>
           </Link>
           <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="p-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+            title="Delete project"
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Delete</span>
           </button>
         </div>
       </div>
@@ -166,6 +165,14 @@ export default function ProjectPage() {
               </span>
             </div>
           )}
+
+          {project.archived_at && (
+            <div className="flex items-center gap-2 text-sm">
+              <Archive className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">Archived:</span>
+              <span>{new Date(project.archived_at).toLocaleDateString()}</span>
+            </div>
+          )}
         </div>
 
         {/* Links */}
@@ -198,40 +205,6 @@ export default function ProjectPage() {
         )}
       </div>
 
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Link
-          href={`/project/${id}/tasks`}
-          className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
-        >
-          <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
-          <h3 className="font-semibold">Tasks</h3>
-          <p className="text-sm text-muted-foreground">Manage project tasks</p>
-        </Link>
-        
-        <Link
-          href={`/project/${id}/kanban`}
-          className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
-        >
-          <svg className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" />
-          </svg>
-          <h3 className="font-semibold">Kanban Board</h3>
-          <p className="text-sm text-muted-foreground">Visual task management</p>
-        </Link>
-        
-        <Link
-          href={`/project/${id}/sprints`}
-          className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
-        >
-          <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
-          <h3 className="font-semibold">Sprints</h3>
-          <p className="text-sm text-muted-foreground">Plan and track sprints</p>
-        </Link>
-      </div>
-
       {/* Tech Stack */}
       {project.tech_stack && project.tech_stack.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-6">
@@ -257,6 +230,56 @@ export default function ProjectPage() {
 
       {/* Comments Section */}
       <ProjectComments projectId={project.id} />
+
+      {/* Quick Actions - hide if archived */}
+      {project.status !== 'archived' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            href={`/project/${id}/tasks`}
+            className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
+          >
+            <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+            <h3 className="font-semibold">Tasks</h3>
+            <p className="text-sm text-muted-foreground">Manage project tasks</p>
+          </Link>
+          
+          <Link
+            href={`/project/${id}/kanban`}
+            className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
+          >
+            <svg className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V6z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 6a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z" />
+            </svg>
+            <h3 className="font-semibold">Kanban Board</h3>
+            <p className="text-sm text-muted-foreground">Visual task management</p>
+          </Link>
+          
+          <Link
+            href={`/project/${id}/sprints`}
+            className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
+          >
+            <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
+            <h3 className="font-semibold">Sprints</h3>
+            <p className="text-sm text-muted-foreground">Plan and track sprints</p>
+          </Link>
+        </div>
+      )}
+
+      {/* Modals */}
+      <DeleteProjectModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        projectId={project.id}
+        projectName={project.name}
+      />
+
+      <ArchiveProjectModal
+        isOpen={showArchiveModal}
+        onClose={() => setShowArchiveModal(false)}
+        projectId={project.id}
+        projectName={project.name}
+      />
     </div>
   )
 }
