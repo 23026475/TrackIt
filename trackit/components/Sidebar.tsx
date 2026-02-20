@@ -12,7 +12,8 @@ import {
   ChevronRight,
   LogOut,
   Moon,
-  Sun
+  Sun,
+  History
 } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 import { useTheme } from 'next-themes'
@@ -46,8 +47,9 @@ export function Sidebar() {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/project', icon: FolderKanban },
+    { name: 'Projects', href: '/projects', icon: FolderKanban },
     { name: 'Kanban', href: '/kanban', icon: Calendar },
+    { name: 'History', href: '/history', icon: History },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
