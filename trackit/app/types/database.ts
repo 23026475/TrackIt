@@ -215,6 +215,35 @@ export interface Database {
           }
         ]
       }
+      components: {
+        Row: {
+          id: string
+          project_id: string
+          type: 'service' | 'database' | 'integration'
+          name: string
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          type: 'service' | 'database' | 'integration'
+          name: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          type?: 'service' | 'database' | 'integration'
+          name?: string
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -243,3 +272,7 @@ export type SprintUpdate = Database['public']['Tables']['sprints']['Update']
 
 export type ProjectNote = Database['public']['Tables']['project_notes']['Row']
 export type ProjectNoteInsert = Database['public']['Tables']['project_notes']['Insert']
+
+export type Component = Database['public']['Tables']['components']['Row']
+export type ComponentInsert = Database['public']['Tables']['components']['Insert']
+export type ComponentUpdate = Database['public']['Tables']['components']['Update']
