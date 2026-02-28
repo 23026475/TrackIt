@@ -1,6 +1,7 @@
+// components/Sidebar.tsx
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { 
@@ -13,14 +14,18 @@ import {
   LogOut,
   Moon,
   Sun,
-  History
+  History,
+  BookOpen
 } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 import { useTheme } from 'next-themes'
-import { useEffect } from 'react'
 
-export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
+interface SidebarProps {
+  collapsed: boolean
+  setCollapsed: (collapsed: boolean) => void
+}
+
+export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const [userEmail, setUserEmail] = useState<string>('')
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
@@ -48,27 +53,24 @@ export function Sidebar() {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Projects', href: '/project', icon: FolderKanban },
+    { name: 'Research', href: '/research', icon: BookOpen },
     { name: 'Kanban', href: '/kanban', icon: Calendar },
     { name: 'History', href: '/history', icon: History },
     { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
-  // Get first letter of email for avatar
   const getInitial = () => {
     return userEmail ? userEmail.charAt(0).toUpperCase() : '?'
   }
 
+  // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
     return null
   }
 
   return (
-    <div 
-      className={`${
-        collapsed ? 'w-20' : 'w-64'
-      } border-r border-border bg-card h-screen sticky top-0 transition-all duration-300 ease-in-out flex flex-col`}
-    >
-      {/* Header Section - Logo and collapse button */}
+    <div className={`h-full ${collapsed ? 'w-20' : 'w-64'} bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col`}>
+      {/* Header Section */}
       <div className={`p-4 border-b border-border ${collapsed ? 'px-2' : ''}`}>
         {!collapsed ? (
           <div className="flex items-center justify-between">
@@ -96,7 +98,7 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* User Info - Below logo */}
+      {/* User Info */}
       {!collapsed && (
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
@@ -110,7 +112,7 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Navigation - Takes up remaining space */}
+      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navigation.map((item) => {
           const isActive = pathname === item.href || 
@@ -135,10 +137,9 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Bottom Section - Theme Toggle, Logout, and Version */}
+      {/* Bottom Section */}
       <div className={`border-t border-border p-4 ${collapsed ? 'px-2' : ''}`}>
         {!collapsed ? (
-          // Expanded view
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Theme</span>
@@ -168,7 +169,6 @@ export function Sidebar() {
             </p>
           </div>
         ) : (
-          // Collapsed view - only icons
           <div className="flex flex-col items-center space-y-4">
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
