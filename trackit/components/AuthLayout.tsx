@@ -6,13 +6,14 @@ import { LandingNavbar } from './LandingNavbar'
 import { LandingFooter } from './LandingFooter'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/app/lib/supabase/client'
+import { MobileBottomNav } from './MobileBottomNav'
 
-export function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const supabase = createClient()
 
-  // Check if user is authenticated
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -20,7 +21,6 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     }
     checkAuth()
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsAuthenticated(!!session)
     })
@@ -28,11 +28,9 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [supabase])
 
-  // Define which paths are public
   const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password']
   const isPublicPath = publicPaths.includes(pathname)
 
-  // Show loading or nothing while checking auth
   if (isAuthenticated === null && !isPublicPath) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -41,7 +39,6 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Landing page - show navbar and footer
   if (pathname === '/') {
     return (
       <div className="min-h-screen flex flex-col">
@@ -54,7 +51,6 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Auth pages - no layout
   if (isPublicPath) {
     return (
       <div className="min-h-screen bg-background">
@@ -63,17 +59,26 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Authenticated pages - show sidebar
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 p-6 overflow-auto">
-            <div className="container mx-auto">
+        {/* Sidebar - Hidden on mobile, shown on desktop */}
+        <div className="hidden lg:block fixed left-0 top-0 h-screen z-40">
+          <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
+        </div>
+
+        {/* Main Content - with left margin on desktop */}
+        <div className="lg:ml-[256px] transition-all duration-300 ease-in-out">
+          <main className="min-h-screen p-4 sm:p-6 lg:p-8 pb-20 lg:pb-8">
+            <div className="container mx-auto max-w-7xl">
               {children}
             </div>
           </main>
+        </div>
+
+        {/* Mobile Bottom Navigation - Shown on mobile, hidden on desktop */}
+        <div className="lg:hidden">
+          <MobileBottomNav />
         </div>
       </div>
     )
