@@ -1,16 +1,23 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { createClient } from '../lib/supabase/client'
-import { ArrowLeft, Mail, AlertCircle, CheckCircle } from 'lucide-react'
+import { createClient } from '@/app/lib/supabase/client'
+import { ArrowLeft, Moon, Sun, Mail, AlertCircle, CheckCircle } from 'lucide-react'
+import { useTheme } from 'next-themes'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const supabase = createClient()
+  const { theme, setTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,39 +41,58 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 relative">
-      {/* Back to Login Button */}
-      <Link
-        href="/login"
-        className="absolute top-8 left-8 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Login
-      </Link>
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Simple Header with Back and Theme Toggle */}
+      <div className="flex justify-between items-center p-4 border-b border-border">
+        <Link
+          href="/login"
+          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Login</span>
+        </Link>
+        
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
+          aria-label="Toggle theme"
+        >
+          {theme === 'dark' ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+        </button>
+      </div>
 
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Reset your password
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Enter your email address and we'll send you a link to reset your password.
-          </p>
-        </div>
+      {/* Main Content */}
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-md space-y-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-foreground">Reset password</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Enter your email to receive a reset link
+            </p>
+          </div>
 
-        {success ? (
-          <div className="bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-              <div className="text-green-700 dark:text-green-200">
-                <p className="font-medium">Check your email!</p>
-                <p className="text-sm mt-1">
-                  We've sent a password reset link to your email address. The link will expire in 1 hour.
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 text-center">
+          {success ? (
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 text-center">
+              <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-green-800 dark:text-green-200 mb-2">
+                Check your email
+              </h3>
+              <p className="text-sm text-green-600 dark:text-green-300 mb-4">
+                We've sent a password reset link to {email}
+              </p>
               <Link
                 href="/login"
                 className="text-sm text-green-600 dark:text-green-400 hover:underline"
@@ -74,60 +100,50 @@ export default function ForgotPasswordPage() {
                 Return to login
               </Link>
             </div>
-          </div>
-        ) : (
-          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0" />
-                  <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {error && (
+                <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <p>{error}</p>
+                </div>
+              )}
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+                  Email address
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    id="email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                    placeholder="you@example.com"
+                  />
                 </div>
               </div>
-            )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Email address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {loading ? 'Sending reset link...' : 'Send reset link'}
+                {loading ? 'Sending...' : 'Send reset link'}
               </button>
-            </div>
 
-            <div className="text-center">
-              <Link
-                href="/login"
-                className="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400"
-              >
-                Remember your password? Sign in
-              </Link>
-            </div>
-          </form>
-        )}
+              <p className="text-center text-sm text-muted-foreground">
+                Remember your password?{' '}
+                <Link href="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                  Sign in
+                </Link>
+              </p>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   )

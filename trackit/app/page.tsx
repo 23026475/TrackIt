@@ -1,14 +1,37 @@
+"use client"
+
 import Link from 'next/link'
 import { Code2, Layout, CheckSquare, ArrowRight, ChevronDown, Zap, Shield, Users } from 'lucide-react'
 import { LandingNavbar } from '@/components/LandingNavbar'
 import { LandingFooter } from '@/components/LandingFooter'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
+  const { theme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-950">
+        <LandingNavbar />
+        <div className="container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
+          <div className="animate-pulse">Loading...</div>
+        </div>
+        <LandingFooter />
+      </main>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-950">
+    <main key={theme} className="min-h-screen bg-gradient-to-b from-white to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <LandingNavbar />
       
-      {/* Hero Section - Add padding top to account for fixed navbar */}
+      {/* Hero Section */}
       <div className="container mx-auto px-4 pt-24 pb-16 md:pt-32 md:pb-24">
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -19,7 +42,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Features Grid - Add id for navigation */}
+        {/* Features Grid */}
         <div id="features" className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto mb-16 scroll-mt-20">
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 hover:shadow-lg transition-shadow">
             <Layout className="w-12 h-12 mb-4 text-blue-600 dark:text-blue-400" />

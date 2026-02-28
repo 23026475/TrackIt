@@ -28,7 +28,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [supabase])
 
-  // Define which paths are public (no sidebar)
+  // Define which paths are public (no header/sidebar)
   const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password']
   const isPublicPath = publicPaths.includes(pathname)
 
@@ -41,8 +41,8 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Public pages (landing, login, etc.) - show navbar and footer
-  if (isPublicPath) {
+  // Landing page - show navbar and footer
+  if (pathname === '/') {
     return (
       <div className="min-h-screen flex flex-col">
         <LandingNavbar />
@@ -54,16 +54,27 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Authenticated pages - show sidebar only (header is inside sidebar)
+  // Auth pages (login, register, forgot-password, reset-password) - no navbar, just content
+  if (isPublicPath) {
+    return (
+      <div className="min-h-screen bg-background">
+        {children}
+      </div>
+    )
+  }
+
+  // Authenticated pages - show header and sidebar
   if (isAuthenticated) {
     return (
-      <div className="min-h-screen bg-background flex">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <div className="container mx-auto">
-            {children}
-          </div>
-        </main>
+      <div className="min-h-screen bg-background">
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="container mx-auto">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     )
   }
