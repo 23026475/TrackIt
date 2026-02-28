@@ -28,7 +28,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [supabase])
 
-  // Define which paths are public (no header/sidebar)
+  // Define which paths are public
   const publicPaths = ['/', '/login', '/register', '/forgot-password', '/reset-password']
   const isPublicPath = publicPaths.includes(pathname)
 
@@ -54,7 +54,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Auth pages (login, register, forgot-password, reset-password) - no navbar, just content
+  // Auth pages - no layout
   if (isPublicPath) {
     return (
       <div className="min-h-screen bg-background">
@@ -63,7 +63,7 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Authenticated pages - show header and sidebar
+  // Authenticated pages - show sidebar
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-background">
@@ -79,6 +79,5 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
     )
   }
 
-  // Fallback - should not reach here due to middleware
   return null
 }

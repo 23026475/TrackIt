@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 import { createClient } from '@/app/lib/supabase/client'
-import { Plus, MoreVertical, Edit, Trash2, Calendar, Flag } from 'lucide-react'
+import { Plus, Edit, Trash2, Calendar, Eye, EyeOff, Code, Database, Globe } from 'lucide-react'
 import { TaskModal } from './TaskModal'
 
 interface Task {
@@ -22,14 +22,44 @@ interface KanbanBoardProps {
 }
 
 const columns = [
-  { id: 'todo', title: 'To Do', color: 'bg-gray-100 dark:bg-gray-800' },
-  { id: 'in_progress', title: 'In Progress', color: 'bg-blue-100 dark:bg-blue-900/30' },
-  { id: 'review', title: 'Review', color: 'bg-yellow-100 dark:bg-yellow-900/30' },
-  { id: 'done', title: 'Done', color: 'bg-green-100 dark:bg-green-900/30' }
+  { 
+    id: 'todo' as const, 
+    title: 'To Do', 
+    color: 'bg-gray-50 dark:bg-gray-800/50',
+    headerColor: 'bg-gray-100 dark:bg-gray-800',
+    textColor: 'text-gray-700 dark:text-gray-300',
+    borderColor: 'border-gray-200 dark:border-gray-700'
+  },
+  { 
+    id: 'in_progress' as const, 
+    title: 'In Progress', 
+    color: 'bg-blue-50 dark:bg-blue-900/20',
+    headerColor: 'bg-blue-100 dark:bg-blue-900/40',
+    textColor: 'text-blue-700 dark:text-blue-300',
+    borderColor: 'border-blue-200 dark:border-blue-800'
+  },
+  { 
+    id: 'review' as const, 
+    title: 'Review', 
+    color: 'bg-yellow-50 dark:bg-yellow-900/20',
+    headerColor: 'bg-yellow-100 dark:bg-yellow-900/40',
+    textColor: 'text-yellow-700 dark:text-yellow-300',
+    borderColor: 'border-yellow-200 dark:border-yellow-800'
+  },
+  { 
+    id: 'done' as const, 
+    title: 'Done', 
+    color: 'bg-green-50 dark:bg-green-900/20',
+    headerColor: 'bg-green-100 dark:bg-green-900/40',
+    textColor: 'text-green-700 dark:text-green-300',
+    borderColor: 'border-green-200 dark:border-green-800'
+  }
 ]
 
+type ColumnId = typeof columns[number]['id']
+
 export function KanbanBoard({ projectId }: KanbanBoardProps) {
-  const [tasks, setTasks] = useState<Record<string, Task[]>>({
+  const [tasks, setTasks] = useState<Record<ColumnId, Task[]>>({
     todo: [],
     in_progress: [],
     review: [],
@@ -50,6 +80,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         .from('tasks')
         .select('*')
         .eq('project_id', projectId)
+        .gt('position', -1) // Only fetch tasks with position > -1 (visible in kanban)
         .order('position', { ascending: true })
 
       if (error) throw error
@@ -75,9 +106,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
     const { source, destination, draggableId } = result
 
+    // Type assertion for column IDs
+    const sourceId = source.droppableId as ColumnId
+    const destId = destination.droppableId as ColumnId
+
     // Same column
-    if (source.droppableId === destination.droppableId) {
-      const column = tasks[source.droppableId as keyof typeof tasks]
+    if (sourceId === destId) {
+      const column = tasks[sourceId]
       const newTasks = [...column]
       const [removed] = newTasks.splice(source.index, 1)
       newTasks.splice(destination.index, 0, removed)
@@ -85,7 +120,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       // Update positions
       setTasks({
         ...tasks,
-        [source.droppableId]: newTasks
+        [sourceId]: newTasks
       })
 
       // Update positions in database
@@ -97,25 +132,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       }
     } else {
       // Different column
-      const sourceColumn = [...tasks[source.droppableId as keyof typeof tasks]]
-      const destColumn = [...tasks[destination.droppableId as keyof typeof tasks]]
+      const sourceColumn = [...tasks[sourceId]]
+      const destColumn = [...tasks[destId]]
       const [removed] = sourceColumn.splice(source.index, 1)
       
-      // Update task status
-      removed.status = destination.droppableId as Task['status']
+      // Update task status with proper type
+      removed.status = destId
       destColumn.splice(destination.index, 0, removed)
 
       setTasks({
         ...tasks,
-        [source.droppableId]: sourceColumn,
-        [destination.droppableId]: destColumn
+        [sourceId]: sourceColumn,
+        [destId]: destColumn
       })
 
       // Update status and positions
       await supabase
         .from('tasks')
         .update({ 
-          status: destination.droppableId,
+          status: destId,
           position: destination.index 
         })
         .eq('id', draggableId)
@@ -144,7 +179,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       // Remove from state
       const newTasks = { ...tasks }
       for (const column in newTasks) {
-        newTasks[column as keyof typeof tasks] = newTasks[column as keyof typeof tasks].filter(t => t.id !== taskId)
+        newTasks[column as ColumnId] = newTasks[column as ColumnId].filter(t => t.id !== taskId)
       }
       setTasks(newTasks)
     } catch (error) {
@@ -154,11 +189,58 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900/30'
-      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30'
-      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30'
-      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-800'
+      case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900/30 dark:text-red-300'
+      case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-300'
+      case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/30 dark:text-green-300'
+      default: return 'text-gray-600 bg-gray-100 dark:bg-gray-800 dark:text-gray-300'
     }
+  }
+
+  // Get card background color based on labels
+  const getCardBackgroundColor = (labels: string[] | null) => {
+    if (!labels || labels.length === 0) return 'bg-white dark:bg-gray-800'
+    
+    const labelSet = new Set(labels.map(l => l.toLowerCase().trim()))
+    
+    if (labelSet.has('frontend') || labelSet.has('front-end') || labelSet.has('ui') || labelSet.has('ux')) {
+      return 'bg-blue-50 dark:bg-blue-950/30 border-l-4 border-l-blue-500'
+    }
+    if (labelSet.has('backend') || labelSet.has('back-end') || labelSet.has('api') || labelSet.has('server')) {
+      return 'bg-green-50 dark:bg-green-950/30 border-l-4 border-l-green-500'
+    }
+    if (labelSet.has('database') || labelSet.has('db') || labelSet.has('data') || labelSet.has('sql')) {
+      return 'bg-purple-50 dark:bg-purple-950/30 border-l-4 border-l-purple-500'
+    }
+    if (labelSet.has('bug') || labelSet.has('fix') || labelSet.has('issue')) {
+      return 'bg-red-50 dark:bg-red-950/30 border-l-4 border-l-red-500'
+    }
+    if (labelSet.has('feature') || labelSet.has('enhancement') || labelSet.has('new')) {
+      return 'bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-l-yellow-500'
+    }
+    if (labelSet.has('documentation') || labelSet.has('docs') || labelSet.has('readme')) {
+      return 'bg-orange-50 dark:bg-orange-950/30 border-l-4 border-l-orange-500'
+    }
+    
+    return 'bg-white dark:bg-gray-800'
+  }
+
+  // Get icon based on labels
+  const getTaskIcon = (labels: string[] | null) => {
+    if (!labels || labels.length === 0) return null
+    
+    const labelSet = new Set(labels.map(l => l.toLowerCase().trim()))
+    
+    if (labelSet.has('frontend') || labelSet.has('front-end') || labelSet.has('ui') || labelSet.has('ux')) {
+      return <Globe className="h-3 w-3 text-blue-500" />
+    }
+    if (labelSet.has('backend') || labelSet.has('back-end') || labelSet.has('api') || labelSet.has('server')) {
+      return <Code className="h-3 w-3 text-green-500" />
+    }
+    if (labelSet.has('database') || labelSet.has('db') || labelSet.has('data') || labelSet.has('sql')) {
+      return <Database className="h-3 w-3 text-purple-500" />
+    }
+    
+    return null
   }
 
   if (loading) {
@@ -188,11 +270,14 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       <DragDropContext onDragEnd={handleDragEnd}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {columns.map((column) => (
-            <div key={column.id} className="bg-card border border-border rounded-lg p-4">
-              <h3 className="font-semibold mb-4 flex justify-between items-center">
+            <div 
+              key={column.id} 
+              className={`${column.color} border ${column.borderColor} rounded-lg p-4`}
+            >
+              <h3 className={`font-semibold mb-4 flex justify-between items-center ${column.textColor}`}>
                 <span>{column.title}</span>
-                <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                  {tasks[column.id as keyof typeof tasks].length}
+                <span className={`text-sm px-2 py-1 rounded-full ${column.headerColor} ${column.textColor}`}>
+                  {tasks[column.id].length}
                 </span>
               </h3>
 
@@ -202,22 +287,27 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`min-h-[200px] space-y-2 p-2 rounded-lg transition-colors ${
-                      snapshot.isDraggingOver ? column.color : ''
+                      snapshot.isDraggingOver ? column.headerColor : ''
                     }`}
                   >
-                    {tasks[column.id as keyof typeof tasks].map((task, index) => (
+                    {tasks[column.id].map((task, index) => (
                       <Draggable key={task.id} draggableId={task.id} index={index}>
                         {(provided, snapshot) => (
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`bg-white dark:bg-gray-800 border border-border rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow ${
-                              snapshot.isDragging ? 'shadow-lg rotate-1' : ''
+                            className={`${getCardBackgroundColor(task.labels)} border-2 rounded-lg p-3 shadow-sm hover:shadow-md transition-all ${
+                              snapshot.isDragging 
+                                ? 'shadow-lg rotate-1 scale-105 border-primary' 
+                                : column.borderColor
                             }`}
                           >
                             <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-medium text-sm">{task.title}</h4>
+                              <div className="flex items-center gap-1">
+                                {getTaskIcon(task.labels)}
+                                <h4 className="font-medium text-sm">{task.title}</h4>
+                              </div>
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => {

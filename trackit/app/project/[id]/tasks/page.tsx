@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/app/lib/supabase/client'
 import { Project, Task } from '@/app/types/database'
-import { ArrowLeft, Plus, Calendar, Flag, Edit, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Calendar, Flag, Edit, Trash2, Eye, EyeOff, Code, Database, Globe } from 'lucide-react'
 import { TaskModal } from '@/components/TaskModal'
 
 export default function ProjectTasksPage() {
@@ -19,6 +19,7 @@ export default function ProjectTasksPage() {
   const [error, setError] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const [updatingVisibility, setUpdatingVisibility] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -76,6 +77,35 @@ export default function ProjectTasksPage() {
     }
   }
 
+  const toggleKanbanVisibility = async (task: Task) => {
+    setUpdatingVisibility(task.id)
+    try {
+      const newPosition = task.position === -1 ? 0 : -1
+      const updates: any = { position: newPosition }
+      
+      // If showing in kanban, set a default status
+      if (newPosition !== -1 && !task.status) {
+        updates.status = 'todo'
+      }
+
+      const { error } = await supabase
+        .from('tasks')
+        .update(updates)
+        .eq('id', task.id)
+
+      if (error) throw error
+
+      // Update local state
+      setTasks(prev => prev.map(t => 
+        t.id === task.id ? { ...t, position: newPosition } : t
+      ))
+    } catch (err: any) {
+      console.error('Error toggling visibility:', err)
+    } finally {
+      setUpdatingVisibility(null)
+    }
+  }
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high': return 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200'
@@ -93,6 +123,53 @@ export default function ProjectTasksPage() {
       case 'done': return 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-200'
       default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
     }
+  }
+
+  // Get background color based on task labels
+  const getTaskBackgroundColor = (labels: string[] | null) => {
+    if (!labels || labels.length === 0) return 'bg-card'
+    
+    const labelSet = new Set(labels.map(l => l.toLowerCase().trim()))
+    
+    if (labelSet.has('frontend') || labelSet.has('front-end') || labelSet.has('ui') || labelSet.has('ux')) {
+      return 'bg-blue-50 dark:bg-blue-950/30 border-l-4 border-l-blue-500'
+    }
+    if (labelSet.has('backend') || labelSet.has('back-end') || labelSet.has('api') || labelSet.has('server')) {
+      return 'bg-green-50 dark:bg-green-950/30 border-l-4 border-l-green-500'
+    }
+    if (labelSet.has('database') || labelSet.has('db') || labelSet.has('data') || labelSet.has('sql')) {
+      return 'bg-purple-50 dark:bg-purple-950/30 border-l-4 border-l-purple-500'
+    }
+    if (labelSet.has('bug') || labelSet.has('fix') || labelSet.has('issue')) {
+      return 'bg-red-50 dark:bg-red-950/30 border-l-4 border-l-red-500'
+    }
+    if (labelSet.has('feature') || labelSet.has('enhancement') || labelSet.has('new')) {
+      return 'bg-yellow-50 dark:bg-yellow-950/30 border-l-4 border-l-yellow-500'
+    }
+    if (labelSet.has('documentation') || labelSet.has('docs') || labelSet.has('readme')) {
+      return 'bg-orange-50 dark:bg-orange-950/30 border-l-4 border-l-orange-500'
+    }
+    
+    return 'bg-card'
+  }
+
+  // Get icon based on task labels
+  const getTaskIcon = (labels: string[] | null) => {
+    if (!labels || labels.length === 0) return null
+    
+    const labelSet = new Set(labels.map(l => l.toLowerCase().trim()))
+    
+    if (labelSet.has('frontend') || labelSet.has('front-end') || labelSet.has('ui') || labelSet.has('ux')) {
+      return <Globe className="h-4 w-4 text-blue-500" />
+    }
+    if (labelSet.has('backend') || labelSet.has('back-end') || labelSet.has('api') || labelSet.has('server')) {
+      return <Code className="h-4 w-4 text-green-500" />
+    }
+    if (labelSet.has('database') || labelSet.has('db') || labelSet.has('data') || labelSet.has('sql')) {
+      return <Database className="h-4 w-4 text-purple-500" />
+    }
+    
+    return null
   }
 
   if (!projectId) {
@@ -176,11 +253,26 @@ export default function ProjectTasksPage() {
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="bg-card border border-border rounded-lg p-4 hover:shadow-md transition-shadow"
+              className={`${getTaskBackgroundColor(task.labels)} border border-border rounded-lg p-4 hover:shadow-md transition-shadow`}
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h3 className="font-semibold mb-1">{task.title}</h3>
+                  <div className="flex items-center gap-2 mb-1">
+                    {getTaskIcon(task.labels)}
+                    <h3 className="font-semibold">{task.title}</h3>
+                    {task.position === -1 ? (
+                      <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center gap-1">
+                        <EyeOff className="h-3 w-3" />
+                        Hidden
+                      </span>
+                    ) : (
+                      <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full flex items-center gap-1">
+                        <Eye className="h-3 w-3" />
+                        On Kanban
+                      </span>
+                    )}
+                  </div>
+                  
                   {task.description && (
                     <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
                   )}
@@ -223,6 +315,20 @@ export default function ProjectTasksPage() {
                 </div>
 
                 <div className="flex items-center gap-1 ml-4">
+                  <button
+                    onClick={() => toggleKanbanVisibility(task)}
+                    disabled={updatingVisibility === task.id}
+                    className="p-1 hover:bg-muted rounded transition-colors"
+                    title={task.position === -1 ? "Show in Kanban" : "Hide from Kanban"}
+                  >
+                    {updatingVisibility === task.id ? (
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    ) : task.position === -1 ? (
+                      <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                    ) : (
+                      <EyeOff className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                    )}
+                  </button>
                   <button
                     onClick={() => {
                       setEditingTask(task)

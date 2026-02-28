@@ -4,6 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
 import { AuthLayout } from '@/components/AuthLayout'
+import { MobileMenuProvider } from '@/app/contexts/MobileMenuContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -26,9 +27,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthLayout>
-            {children}
-          </AuthLayout>
+          <MobileMenuProvider>
+            <AuthLayout>
+              {children}
+            </AuthLayout>
+          </MobileMenuProvider>
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>

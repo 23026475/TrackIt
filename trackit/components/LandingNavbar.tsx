@@ -41,7 +41,7 @@ export function LandingNavbar() {
                 TrackIt
               </span>
             </Link>
-            <div className="h-5 w-5" /> {/* Placeholder for theme toggle */}
+            <div className="w-10 h-10" /> {/* Placeholder for theme toggle */}
           </div>
         </div>
       </nav>
@@ -134,26 +134,28 @@ export function LandingNavbar() {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex flex-col space-y-3">
+      {/* Mobile Navigation - Fixed positioning for full viewport width */}
+      {mobileMenuOpen && (
+        <div className="md:hidden fixed left-0 right-0 top-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 shadow-lg">
+          <div className="px-4 py-4">
+            <div className="flex flex-col space-y-2">
               <button
                 onClick={() => scrollToSection('features')}
-                className="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left"
+                className="w-full px-4 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left transition-colors"
               >
                 Features
               </button>
               <button
                 onClick={() => scrollToSection('features-preview')}
-                className="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left"
+                className="w-full px-4 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left transition-colors"
               >
                 Preview
               </button>
               <button
                 onClick={() => scrollToSection('pricing')}
-                className="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left"
+                className="w-full px-4 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left transition-colors"
               >
                 Pricing
               </button>
@@ -161,45 +163,49 @@ export function LandingNavbar() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-2 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                className="w-full px-4 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-left transition-colors"
               >
                 GitHub
               </a>
               
-              {/* Mobile theme toggle and auth buttons */}
-              <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
+              {/* Divider */}
+              <div className="border-t border-gray-200 dark:border-gray-700 my-3"></div>
+              
+              {/* Theme Toggle and Auth Buttons */}
+              <div className="space-y-3">
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  aria-label="Toggle theme"
+                  className="w-full flex items-center justify-between px-4 py-4 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
+                  <span>Theme</span>
                   {theme === 'dark' ? (
-                    <Sun className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                    <Sun className="h-5 w-5" />
                   ) : (
-                    <Moon className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                    <Moon className="h-5 w-5" />
                   )}
                 </button>
                 
-                <div className="flex items-center gap-2">
-                  <Link
-                    href="/login"
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    <span>Login</span>
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    Sign Up
-                  </Link>
-                </div>
+                <Link
+                  href="/login"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <LogIn className="h-5 w-5" />
+                  <span>Login</span>
+                </Link>
+                
+                <Link
+                  href="/register"
+                  className="w-full flex items-center justify-center px-4 py-4 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-base font-medium"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
               </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </nav>
   )
 }

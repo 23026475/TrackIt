@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { X, Calendar, Flag, User, Tag } from 'lucide-react'
+import { X, Calendar, Flag, Tag, Layers, Eye, EyeOff } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 
 interface TaskModalProps {
@@ -20,6 +20,7 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
   const [dueDate, setDueDate] = useState('')
   const [estimatedHours, setEstimatedHours] = useState('')
   const [labels, setLabels] = useState('')
+  const [showInKanban, setShowInKanban] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
@@ -34,6 +35,7 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
       setDueDate(editTask.due_date || '')
       setEstimatedHours(editTask.estimated_hours?.toString() || '')
       setLabels(editTask.labels?.join(', ') || '')
+      setShowInKanban(editTask.position !== -1)
     }
   }, [editTask])
 
@@ -47,6 +49,7 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
     setDueDate('')
     setEstimatedHours('')
     setLabels('')
+    setShowInKanban(true)
     setError(null)
   }
 
@@ -63,50 +66,89 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
     setError(null)
 
     try {
-      const taskData = {
+      const taskData: any = {
         project_id: projectId,
         title: title.trim(),
         description: description.trim() || null,
-        status,
         priority,
         due_date: dueDate || null,
         estimated_hours: estimatedHours ? parseInt(estimatedHours) : null,
         labels: labels.split(',').map(l => l.trim()).filter(l => l)
       }
 
-      let error
-      if (editTask) {
+      if (!editTask) {
+        // New task
+        if (showInKanban) {
+          taskData.status = status
+          // Get max position for this status
+          const { data: maxPositionTask } = await supabase
+            .from('tasks')
+            .select('position')
+            .eq('project_id', projectId)
+            .eq('status', status)
+            .order('position', { ascending: false })
+            .limit(1)
+
+          const maxPosition = maxPositionTask && maxPositionTask.length > 0 ? maxPositionTask[0].position : -1
+          taskData.position = maxPosition + 1
+        } else {
+          taskData.status = 'todo'
+          taskData.position = -1
+        }
+
+        const { error } = await supabase
+          .from('tasks')
+          .insert([taskData])
+
+        if (error) throw error
+      } else {
         // Update existing task
-        ({ error } = await supabase
+        if (showInKanban && editTask.position === -1) {
+          // Task was hidden, now showing in kanban
+          const { data: maxPositionTask } = await supabase
+            .from('tasks')
+            .select('position')
+            .eq('project_id', projectId)
+            .eq('status', status)
+            .order('position', { ascending: false })
+            .limit(1)
+
+          const maxPosition = maxPositionTask && maxPositionTask.length > 0 ? maxPositionTask[0].position : -1
+          taskData.position = maxPosition + 1
+          taskData.status = status
+        } else if (!showInKanban && editTask.position !== -1) {
+          // Task was showing, now hide
+          taskData.position = -1
+        } else if (showInKanban) {
+          // Task remains in kanban, may have status change
+          taskData.status = status
+        }
+
+        const { error } = await supabase
           .from('tasks')
           .update(taskData)
-          .eq('id', editTask.id))
-      } else {
-        // Create new task - get max position for this status
-        const { data: maxPositionTask } = await supabase
-          .from('tasks')
-          .select('position')
-          .eq('project_id', projectId)
-          .eq('status', status)
-          .order('position', { ascending: false })
-          .limit(1)
+          .eq('id', editTask.id)
 
-        const maxPosition = maxPositionTask && maxPositionTask.length > 0 ? maxPositionTask[0].position : -1
-        taskData.position = maxPosition + 1
-
-        ({ error } = await supabase
-          .from('tasks')
-          .insert([taskData]))
+        if (error) throw error
       }
-
-      if (error) throw error
 
       onTaskAdded()
       handleClose()
     } catch (err: any) {
+      console.error('Error saving task:', err)
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'todo': return 'bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600'
+      case 'in_progress': return 'bg-blue-100 border-blue-300 dark:bg-blue-900/30 dark:border-blue-700'
+      case 'review': return 'bg-yellow-100 border-yellow-300 dark:bg-yellow-900/30 dark:border-yellow-700'
+      case 'done': return 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-700'
+      default: return 'bg-gray-100 border-gray-300 dark:bg-gray-800 dark:border-gray-600'
     }
   }
 
@@ -161,24 +203,51 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            {/* Status */}
+          {/* Show in Kanban Toggle */}
+          <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+            <input
+              type="checkbox"
+              id="showInKanban"
+              checked={showInKanban}
+              onChange={(e) => setShowInKanban(e.target.checked)}
+              className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+            />
+            <label htmlFor="showInKanban" className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+              {showInKanban ? (
+                <Eye className="h-4 w-4 text-primary" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-muted-foreground" />
+              )}
+              Show in Kanban board
+            </label>
+          </div>
+
+          {/* Status Selection - Only shown if showing in kanban */}
+          {showInKanban && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Status
               </label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value as any)}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                <option value="todo">To Do</option>
-                <option value="in_progress">In Progress</option>
-                <option value="review">Review</option>
-                <option value="done">Done</option>
-              </select>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {(['todo', 'in_progress', 'review', 'done'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatus(s)}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                      status === s
+                        ? getStatusColor(s) + ' ring-2 ring-primary ring-offset-2'
+                        : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    {s.replace('_', ' ')}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
 
+          <div className="grid grid-cols-2 gap-4">
             {/* Priority */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -193,21 +262,6 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            {/* Due Date */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Due Date
-              </label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              />
             </div>
 
             {/* Estimated Hours */}
@@ -226,18 +280,33 @@ export function TaskModal({ isOpen, onClose, projectId, onTaskAdded, editTask }:
             </div>
           </div>
 
-          {/* Labels */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Labels (comma separated)
-            </label>
-            <input
-              type="text"
-              value={labels}
-              onChange={(e) => setLabels(e.target.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="bug, feature, documentation"
-            />
+          <div className="grid grid-cols-2 gap-4">
+            {/* Due Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            {/* Labels */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Labels (comma separated)
+              </label>
+              <input
+                type="text"
+                value={labels}
+                onChange={(e) => setLabels(e.target.value)}
+                className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="frontend, backend, database"
+              />
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-border">

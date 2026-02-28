@@ -26,19 +26,20 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
   }
 
   return (
-    <>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+    <div className="space-y-6 px-4 sm:px-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard</h1>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           New Project
@@ -46,57 +47,57 @@ export default function DashboardPage() {
       </div>
 
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg mb-6">
+        <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-200 px-4 py-3 rounded-lg">
           {error}
         </div>
       )}
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-sm text-muted-foreground">Total Projects</p>
-          <p className="text-2xl font-bold">{projects?.length || 0}</p>
+      {/* Stats Overview - Scrollable on mobile */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">Total Projects</p>
+          <p className="text-xl sm:text-2xl font-bold">{projects?.length || 0}</p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-sm text-muted-foreground">Active Projects</p>
-          <p className="text-2xl font-bold">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {projects?.filter(p => p.status === 'active').length || 0}
           </p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-sm text-muted-foreground">Completed</p>
-          <p className="text-2xl font-bold">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">Completed</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {projects?.filter(p => p.status === 'completed').length || 0}
           </p>
         </div>
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-sm text-muted-foreground">High Priority</p>
-          <p className="text-2xl font-bold">
+        <div className="bg-card border border-border rounded-lg p-3 sm:p-4">
+          <p className="text-xs sm:text-sm text-muted-foreground">High Priority</p>
+          <p className="text-xl sm:text-2xl font-bold">
             {projects?.filter(p => p.priority === 'high').length || 0}
           </p>
         </div>
       </div>
 
       {/* Recent Projects */}
-      <h2 className="text-xl font-semibold mb-4">Recent Projects</h2>
+      <h2 className="text-lg sm:text-xl font-semibold">Recent Projects</h2>
       
       {projects && projects.length > 0 ? (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {projects.slice(0, 6).map((project) => (
             <Link
               key={project.id}
               href={`/project/${project.id}`}
-              className="block bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-shadow"
+              className="block bg-card border border-border rounded-lg p-4 sm:p-6 hover:shadow-lg transition-shadow"
             >
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">
+              <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-2 line-clamp-1">
                 {project.name}
               </h3>
               {project.description && (
-                <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                <p className="text-muted-foreground text-xs sm:text-sm mb-4 line-clamp-2">
                   {project.description}
                 </p>
               )}
-              <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium
                   ${project.priority === 'high' ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-200' :
                     project.priority === 'medium' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-200' :
@@ -128,6 +129,6 @@ export default function DashboardPage() {
       )}
 
       <ProjectModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-    </>
+    </div>
   )
 }
