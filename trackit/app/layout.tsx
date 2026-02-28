@@ -3,10 +3,14 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from 'sonner'
-import { AuthLayout } from '@/components/AuthLayout'
+import AuthLayout from '@/components/AuthLayout'
 import { MobileMenuProvider } from '@/app/contexts/MobileMenuContext'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ 
+  subsets: ['latin'],
+  display: 'swap', // Add this to prevent layout shift
+  variable: '--font-inter', // Use CSS variable approach instead
+})
 
 export const metadata: Metadata = {
   title: 'TrackIt - Developer Project Management',
@@ -20,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${inter.variable} font-sans antialiased`}> {/* Use variable approach */}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
