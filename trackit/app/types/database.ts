@@ -261,6 +261,58 @@ export interface Database {
           }
         ]
       }
+      research: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          description: string | null
+          content: string | null
+          category: 'literature' | 'experiment' | 'theory' | 'methodology' | 'other'
+          tags: string[]
+          status: 'draft' | 'in_progress' | 'completed' | 'archived'
+          created_at: string
+          updated_at: string
+          completed_at: string | null
+          archived_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          description?: string | null
+          content?: string | null
+          category: 'literature' | 'experiment' | 'theory' | 'methodology' | 'other'
+          tags?: string[]
+          status?: 'draft' | 'in_progress' | 'completed' | 'archived'
+          created_at?: string
+          updated_at?: string
+          completed_at?: string | null
+          archived_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          description?: string | null
+          content?: string | null
+          category?: 'literature' | 'experiment' | 'theory' | 'methodology' | 'other'
+          tags?: string[]
+          status?: 'draft' | 'in_progress' | 'completed' | 'archived'
+          created_at?: string
+          updated_at?: string
+          completed_at?: string | null
+          archived_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "research_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -293,3 +345,8 @@ export type ProjectNoteInsert = Database['public']['Tables']['project_notes']['I
 export type Component = Database['public']['Tables']['components']['Row']
 export type ComponentInsert = Database['public']['Tables']['components']['Insert']
 export type ComponentUpdate = Database['public']['Tables']['components']['Update']
+
+// Add Research helper types
+export type Research = Database['public']['Tables']['research']['Row']
+export type ResearchInsert = Database['public']['Tables']['research']['Insert']
+export type ResearchUpdate = Database['public']['Tables']['research']['Update']
