@@ -1,39 +1,87 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { createServerClient } from '@supabase/ssr'
+import { type EmailOtpType } from '@supabase/supabase-js'
 
-export async function GET(request: NextRequest) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') ?? '/'
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const token_hash = searchParams.get('token_hash')
+  const type = searchParams.get('type') as EmailOtpType | null
+  const next = searchParams.get('next') ?? '/'
 
-  if (code) {
-    const cookieStore = cookies()
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value
-          },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set({ name, value, ...options })
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.set({ name, value: '', ...options })
-          },
+  // IMPORTANT: Await the cookies promise first
+  const cookieStore = await cookies()
+
+  // Create Supabase client with the awaited cookie store
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
         },
-      }
-    )
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+  if (token_hash && type) {
+    const { error } = await supabase.auth.verifyOtp({
+      type,
+      token_hash,
+    })
+    
     if (!error) {
-      return NextResponse.redirect(`${requestUrl.origin}${next}`)
+      // Redirect user to specified redirect URL or root of app
+      return NextResponse.redirect(new URL(next, request.url))
     }
   }
 
-  // Return the user to an error page with instructions
-  return NextResponse.redirect(`${requestUrl.origin}/auth/auth-code-error`)
-} 
+  // Redirect to error page if verification fails
+  return NextResponse.redirect(new URL('/auth/auth-code-error', request.url))
+}
+
+export async function POST(request: Request) {
+  // For POST requests (like sign out)
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options)
+            })
+          } catch {
+            // Ignore if called from Server Component
+          }
+        },
+      },
+    }
+  )
+
+  // Handle sign out
+  const { error } = await supabase.auth.signOut()
+  
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.redirect(new URL('/login', request.url))
+}
