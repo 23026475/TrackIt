@@ -12,7 +12,7 @@ import { ArrowLeft, Edit, Trash2, Github, Globe, Calendar, Code2, CheckCircle, C
 import Link from 'next/link'
 
 export default function ProjectPage() {
-  const { id } = useParams()
+  const params = useParams()
   const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
@@ -21,16 +21,34 @@ export default function ProjectPage() {
   const [showArchiveModal, setShowArchiveModal] = useState(false)
   const supabase = createClient()
 
+  // --- FIX: Safely extract and validate the project ID ---
+  const rawId = params.id
+  const projectId = Array.isArray(rawId) ? rawId[0] : rawId
+
   useEffect(() => {
+    // Don't fetch if ID is invalid
+    if (!projectId) {
+      setError('Invalid project ID')
+      setLoading(false)
+      return
+    }
+    
     fetchProject()
-  }, [id])
+  }, [projectId]) // Use projectId in dependency array
 
   const fetchProject = async () => {
+    // Double-check ID exists (TypeScript safety)
+    if (!projectId) {
+      setError('Project ID is missing')
+      setLoading(false)
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('id', id)
+        .eq('id', projectId) // Now using the validated string
         .single()
 
       if (error) throw error
@@ -111,7 +129,7 @@ export default function ProjectPage() {
             </button>
           )}
           <Link
-            href={`/project/${id}/edit`}
+            href={`/project/${projectId}/edit`}
             className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
             title="Edit project"
           >
@@ -235,7 +253,7 @@ export default function ProjectPage() {
       {project.status !== 'archived' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Link
-            href={`/project/${id}/tasks`}
+            href={`/project/${projectId}/tasks`}
             className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
           >
             <CheckCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -244,7 +262,7 @@ export default function ProjectPage() {
           </Link>
           
           <Link
-            href={`/project/${id}/kanban`}
+            href={`/project/${projectId}/kanban`}
             className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
           >
             <svg className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +274,7 @@ export default function ProjectPage() {
           </Link>
           
           <Link
-            href={`/project/${id}/sprints`}
+            href={`/project/${projectId}/sprints`}
             className="p-4 bg-card border border-border rounded-lg hover:shadow-lg transition-all hover:border-primary text-center group"
           >
             <Calendar className="h-8 w-8 mx-auto mb-2 text-muted-foreground group-hover:text-primary transition-colors" />
