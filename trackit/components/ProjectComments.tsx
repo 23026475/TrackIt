@@ -10,7 +10,9 @@ interface Comment {
   project_id: string
   content: string
   created_at: string
-  user_id: string
+  // user_id is not in the returned data from project_notes
+  // Let's make it optional or remove it
+  user_id?: string
 }
 
 interface ProjectCommentsProps {
@@ -25,11 +27,20 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState<string>('')
   const supabase = createClient()
 
   useEffect(() => {
     fetchComments()
+    getUserEmail()
   }, [projectId])
+
+  const getUserEmail = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.email) {
+      setUserEmail(user.email)
+    }
+  }
 
   const fetchComments = async () => {
     try {
@@ -67,15 +78,13 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
-
-      console.log('Inserting comment for project:', projectId)
       
       const { data, error } = await supabase
         .from('project_notes')
         .insert([{
           project_id: projectId,
-          content: newComment,
-          user_id: user.id
+          content: newComment
+          // user_id is not in the table schema
         }])
         .select()
         .single()
@@ -85,7 +94,6 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
         throw error
       }
 
-      console.log('Comment added:', data)
       setComments(prev => [data, ...prev])
       setNewComment('')
     } catch (err: any) {
@@ -149,7 +157,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
       <div className="flex items-center gap-2 mb-6">
         <MessageSquare className="h-5 w-5 text-primary" />
         <h2 className="text-lg font-semibold">Project Updates & Comments</h2>
@@ -164,22 +172,22 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
 
       {/* Add Comment Form */}
       <form onSubmit={handleSubmit} className="mb-8">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               placeholder="Add a comment or update about this project..."
-              className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px] resize-y"
+              className="w-full px-3 py-2.5 sm:py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] sm:min-h-[80px] resize-y text-sm"
               disabled={submitting}
             />
           </div>
           <button
             type="submit"
             disabled={submitting || !newComment.trim()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-start"
+            className="sm:self-start px-4 py-2.5 sm:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-5 w-5 sm:h-4 sm:w-4" />
           </button>
         </div>
       </form>
@@ -188,7 +196,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
       {comments.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>No comments yet. Add your first update!</p>
+          <p className="text-sm">No comments yet. Add your first update!</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -203,7 +211,7 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
-                    className="w-full px-3 py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[80px]"
+                    className="w-full px-3 py-2.5 sm:py-2 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary min-h-[100px] sm:min-h-[80px] text-sm"
                     autoFocus
                   />
                   <div className="flex justify-end gap-2">
@@ -212,13 +220,13 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
                         setEditingId(null)
                         setEditContent('')
                       }}
-                      className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors"
+                      className="px-3 py-1.5 sm:px-3 sm:py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={() => handleUpdate(comment.id)}
-                      className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                      className="px-3 py-1.5 sm:px-3 sm:py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                     >
                       Save
                     </button>
@@ -227,43 +235,47 @@ export function ProjectComments({ projectId }: ProjectCommentsProps) {
               ) : (
                 // View mode
                 <>
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
                     <div className="flex items-center gap-2 text-sm">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
                         <User className="h-3 w-3" />
                       </div>
-                      <span className="font-medium">User</span>
-                      <span className="text-muted-foreground">•</span>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Calendar className="h-3 w-3" />
+                      <span className="font-medium truncate max-w-[150px] sm:max-w-none">
+                        {userEmail || 'User'}
+                      </span>
+                      <span className="text-muted-foreground hidden sm:inline">•</span>
+                      <div className="flex items-center gap-1 text-muted-foreground text-xs sm:text-sm">
+                        <Calendar className="h-3 w-3 flex-shrink-0" />
                         <time dateTime={comment.created_at}>
                           {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
                         </time>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 self-end sm:self-auto">
                       <button
                         onClick={() => {
                           setEditingId(comment.id)
                           setEditContent(comment.content)
                         }}
-                        className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
+                        className="p-1.5 sm:p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded transition-colors"
                         title="Edit comment"
                       >
-                        <Edit2 className="h-3 w-3" />
+                        <Edit2 className="h-4 w-4 sm:h-3 sm:w-3" />
                       </button>
                       <button
                         onClick={() => handleDelete(comment.id)}
-                        className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                        className="p-1.5 sm:p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                         title="Delete comment"
                       >
-                        <Trash2 className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4 sm:h-3 sm:w-3" />
                       </button>
                     </div>
                   </div>
                   
-                  <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
+                  <p className="text-sm sm:text-base text-foreground whitespace-pre-wrap mt-2">
+                    {comment.content}
+                  </p>
                 </>
               )}
             </div>

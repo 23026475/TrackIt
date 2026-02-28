@@ -83,7 +83,6 @@ export default function ProjectTasksPage() {
       const newPosition = task.position === -1 ? 0 : -1
       const updates: any = { position: newPosition }
       
-      // If showing in kanban, set a default status
       if (newPosition !== -1 && !task.status) {
         updates.status = 'todo'
       }
@@ -95,7 +94,6 @@ export default function ProjectTasksPage() {
 
       if (error) throw error
 
-      // Update local state
       setTasks(prev => prev.map(t => 
         t.id === task.id ? { ...t, position: newPosition } : t
       ))
@@ -125,7 +123,6 @@ export default function ProjectTasksPage() {
     }
   }
 
-  // Get background color based on task labels
   const getTaskBackgroundColor = (labels: string[] | null) => {
     if (!labels || labels.length === 0) return 'bg-card'
     
@@ -153,7 +150,6 @@ export default function ProjectTasksPage() {
     return 'bg-card'
   }
 
-  // Get icon based on task labels
   const getTaskIcon = (labels: string[] | null) => {
     if (!labels || labels.length === 0) return null
     
@@ -174,7 +170,7 @@ export default function ProjectTasksPage() {
 
   if (!projectId) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -182,7 +178,7 @@ export default function ProjectTasksPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     )
@@ -190,7 +186,7 @@ export default function ProjectTasksPage() {
 
   if (error || !project) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 px-4">
         <p className="text-red-600 dark:text-red-400 mb-4">{error || 'Project not found'}</p>
         <Link
           href="/projects"
@@ -204,20 +200,20 @@ export default function ProjectTasksPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 px-2 sm:px-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            aria-label="Go back"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span>Back</span>
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
-            <p className="text-sm text-muted-foreground">Tasks</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground">{project.name}</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Tasks</p>
           </div>
         </div>
 
@@ -226,7 +222,7 @@ export default function ProjectTasksPage() {
             setEditingTask(null)
             setIsModalOpen(true)
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          className="flex items-center justify-center sm:justify-start gap-2 px-4 py-2.5 sm:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto text-sm"
         >
           <Plus className="h-4 w-4" />
           <span>Add Task</span>
@@ -235,38 +231,38 @@ export default function ProjectTasksPage() {
 
       {/* Tasks List */}
       {tasks.length === 0 ? (
-        <div className="text-center py-12 bg-card border border-border rounded-lg">
+        <div className="text-center py-12 bg-card border border-border rounded-lg px-4">
           <p className="text-muted-foreground mb-4">No tasks yet. Create your first task!</p>
           <button
             onClick={() => {
               setEditingTask(null)
               setIsModalOpen(true)
             }}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors w-full sm:w-auto text-sm"
           >
             <Plus className="h-4 w-4" />
             Create Task
           </button>
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {tasks.map((task) => (
             <div
               key={task.id}
               className={`${getTaskBackgroundColor(task.labels)} border border-border rounded-lg p-4 hover:shadow-md transition-shadow`}
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     {getTaskIcon(task.labels)}
-                    <h3 className="font-semibold">{task.title}</h3>
+                    <h3 className="font-semibold text-base sm:text-lg">{task.title}</h3>
                     {task.position === -1 ? (
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center gap-1">
+                      <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center gap-1">
                         <EyeOff className="h-3 w-3" />
                         Hidden
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full flex items-center gap-1">
+                      <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full flex items-center gap-1">
                         <Eye className="h-3 w-3" />
                         On Kanban
                       </span>
@@ -274,10 +270,10 @@ export default function ProjectTasksPage() {
                   </div>
                   
                   {task.description && (
-                    <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                    <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
                   )}
                   
-                  <div className="flex flex-wrap items-center gap-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-2 text-xs">
                     <span className={`px-2 py-1 rounded-full ${getStatusColor(task.status)}`}>
                       {task.status.replace('_', ' ')}
                     </span>
@@ -301,11 +297,11 @@ export default function ProjectTasksPage() {
                   </div>
 
                   {task.labels && task.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
+                    <div className="flex flex-wrap gap-1 mt-3">
                       {task.labels.map((label) => (
                         <span
                           key={label}
-                          className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs"
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs"
                         >
                           {label}
                         </span>
@@ -314,19 +310,19 @@ export default function ProjectTasksPage() {
                   )}
                 </div>
 
-                <div className="flex items-center gap-1 ml-4">
+                <div className="flex items-center gap-1 sm:self-center">
                   <button
                     onClick={() => toggleKanbanVisibility(task)}
                     disabled={updatingVisibility === task.id}
-                    className="p-1 hover:bg-muted rounded transition-colors"
+                    className="p-2 sm:p-1.5 hover:bg-muted rounded transition-colors"
                     title={task.position === -1 ? "Show in Kanban" : "Hide from Kanban"}
                   >
                     {updatingVisibility === task.id ? (
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      <div className="h-5 w-5 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     ) : task.position === -1 ? (
-                      <Eye className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      <Eye className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground hover:text-primary" />
                     ) : (
-                      <EyeOff className="h-4 w-4 text-muted-foreground hover:text-primary" />
+                      <EyeOff className="h-5 w-5 sm:h-4 sm:w-4 text-muted-foreground hover:text-primary" />
                     )}
                   </button>
                   <button
@@ -334,17 +330,17 @@ export default function ProjectTasksPage() {
                       setEditingTask(task)
                       setIsModalOpen(true)
                     }}
-                    className="p-1 hover:bg-muted rounded transition-colors"
+                    className="p-2 sm:p-1.5 hover:bg-muted rounded transition-colors"
                     title="Edit task"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-5 w-5 sm:h-4 sm:w-4" />
                   </button>
                   <button
                     onClick={() => handleDeleteTask(task.id)}
-                    className="p-1 hover:bg-muted rounded transition-colors text-red-600"
+                    className="p-2 sm:p-1.5 hover:bg-muted rounded transition-colors text-red-600"
                     title="Delete task"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
                   </button>
                 </div>
               </div>
@@ -353,7 +349,6 @@ export default function ProjectTasksPage() {
         </div>
       )}
 
-      {/* Task Modal */}
       <TaskModal
         isOpen={isModalOpen}
         onClose={() => {

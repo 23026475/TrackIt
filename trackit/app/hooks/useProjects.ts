@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
-import { createClient } from '../lib/supabase/client'
-import { Project, ProjectInsert, ProjectUpdate } from '../types/database'
+import { createClient } from '@/app/lib/supabase/client'
+import { Project, ProjectInsert, ProjectUpdate } from '@/app/types/database'
 import { useRouter } from 'next/navigation'
+
+// Define a type for project creation that doesn't require user_id
+type CreateProjectInput = Omit<ProjectInsert, 'user_id' | 'id' | 'created_at' | 'updated_at'>
 
 export function useProjects() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -43,14 +46,19 @@ export function useProjects() {
     }
   }
 
-  const createProject = async (project: ProjectInsert) => {
+  const createProject = async (projectData: CreateProjectInput) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
+      const projectWithUser = {
+        ...projectData,
+        user_id: user.id
+      }
+
       const { data, error } = await supabase
         .from('projects')
-        .insert([{ ...project, user_id: user.id }])
+        .insert([projectWithUser])
         .select()
         .single()
 

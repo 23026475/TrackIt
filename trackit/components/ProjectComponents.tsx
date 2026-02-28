@@ -10,6 +10,26 @@ interface ProjectComponentsProps {
   projectId: string
 }
 
+// Define interfaces for different metadata types
+interface ServiceMetadata {
+  serviceType?: string
+  runtime?: string
+  repositoryUrl?: string
+  deploymentProvider?: string
+  notes?: string
+}
+
+interface DatabaseMetadata {
+  databaseType?: string
+  host?: string
+  managed?: boolean
+}
+
+interface IntegrationMetadata {
+  integrationType?: string
+  config?: string
+}
+
 export function ProjectComponents({ projectId }: ProjectComponentsProps) {
   const [components, setComponents] = useState<Component[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,6 +99,19 @@ export function ProjectComponents({ projectId }: ProjectComponentsProps) {
     }
   }
 
+  // Type guard functions
+  const isServiceMetadata = (metadata: any): metadata is ServiceMetadata => {
+    return metadata && typeof metadata === 'object'
+  }
+
+  const isDatabaseMetadata = (metadata: any): metadata is DatabaseMetadata => {
+    return metadata && typeof metadata === 'object'
+  }
+
+  const isIntegrationMetadata = (metadata: any): metadata is IntegrationMetadata => {
+    return metadata && typeof metadata === 'object'
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -88,23 +121,24 @@ export function ProjectComponents({ projectId }: ProjectComponentsProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">Components</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
+          className="flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm"
         >
           <Plus className="h-4 w-4" />
-          Add Component
+          <span className="hidden sm:inline">Add Component</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
 
       {components.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
           <Server className="h-12 w-12 mx-auto mb-3 opacity-50" />
-          <p>No components added yet.</p>
-          <p className="text-sm mt-1">Add services, databases, or integrations to track your stack.</p>
+          <p className="text-sm">No components added yet.</p>
+          <p className="text-xs mt-1">Add services, databases, or integrations to track your stack.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -113,40 +147,40 @@ export function ProjectComponents({ projectId }: ProjectComponentsProps) {
               key={component.id}
               className="border border-border rounded-lg p-4 hover:border-primary/50 transition-colors"
             >
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg ${getTypeColor(component.type)}`}>
+                  <div className={`p-2 rounded-lg ${getTypeColor(component.type)} flex-shrink-0`}>
                     {getTypeIcon(component.type)}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium">{component.name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
+                      <h3 className="font-medium text-base">{component.name}</h3>
                       <span className={`text-xs px-2 py-0.5 rounded-full ${getTypeColor(component.type)}`}>
                         {component.type}
                       </span>
                     </div>
                     
                     {/* Service Details */}
-                    {component.type === 'service' && component.metadata && (
+                    {component.type === 'service' && component.metadata && isServiceMetadata(component.metadata) && (
                       <div className="mt-2 text-sm text-muted-foreground space-y-1">
                         {component.metadata.serviceType && (
-                          <p>Type: {component.metadata.serviceType}</p>
+                          <p className="text-xs sm:text-sm">Type: {component.metadata.serviceType}</p>
                         )}
                         {component.metadata.runtime && (
-                          <p>Runtime: {component.metadata.runtime}</p>
+                          <p className="text-xs sm:text-sm">Runtime: {component.metadata.runtime}</p>
                         )}
                         {component.metadata.repositoryUrl && (
                           <a
                             href={component.metadata.repositoryUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-blue-600 hover:underline"
+                            className="flex items-center gap-1 text-blue-600 hover:underline text-xs sm:text-sm break-all"
                           >
-                            Repository <ExternalLink className="h-3 w-3" />
+                            Repository <ExternalLink className="h-3 w-3 flex-shrink-0" />
                           </a>
                         )}
                         {component.metadata.deploymentProvider && (
-                          <p>Deployed on: {component.metadata.deploymentProvider}</p>
+                          <p className="text-xs sm:text-sm">Deployed on: {component.metadata.deploymentProvider}</p>
                         )}
                         {component.metadata.notes && (
                           <p className="text-xs italic mt-1">{component.metadata.notes}</p>
@@ -155,25 +189,25 @@ export function ProjectComponents({ projectId }: ProjectComponentsProps) {
                     )}
 
                     {/* Database Details */}
-                    {component.type === 'database' && component.metadata && (
+                    {component.type === 'database' && component.metadata && isDatabaseMetadata(component.metadata) && (
                       <div className="mt-2 text-sm text-muted-foreground space-y-1">
                         {component.metadata.databaseType && (
-                          <p>Type: {component.metadata.databaseType}</p>
+                          <p className="text-xs sm:text-sm">Type: {component.metadata.databaseType}</p>
                         )}
                         {component.metadata.host && (
-                          <p>Host: {component.metadata.host}</p>
+                          <p className="text-xs sm:text-sm">Host: {component.metadata.host}</p>
                         )}
                         {component.metadata.managed && (
-                          <p className="text-green-600">✓ Managed Database</p>
+                          <p className="text-xs sm:text-sm text-green-600">✓ Managed Database</p>
                         )}
                       </div>
                     )}
 
                     {/* Integration Details */}
-                    {component.type === 'integration' && component.metadata && (
+                    {component.type === 'integration' && component.metadata && isIntegrationMetadata(component.metadata) && (
                       <div className="mt-2 text-sm text-muted-foreground space-y-1">
                         {component.metadata.integrationType && (
-                          <p>Type: {component.metadata.integrationType}</p>
+                          <p className="text-xs sm:text-sm">Type: {component.metadata.integrationType}</p>
                         )}
                         {component.metadata.config && (
                           <p className="text-xs italic mt-1">{component.metadata.config}</p>
@@ -185,10 +219,10 @@ export function ProjectComponents({ projectId }: ProjectComponentsProps) {
 
                 <button
                   onClick={() => handleDelete(component.id)}
-                  className="p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                  className="self-end sm:self-center p-2 sm:p-1 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                   title="Remove component"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-5 w-5 sm:h-4 sm:w-4" />
                 </button>
               </div>
             </div>

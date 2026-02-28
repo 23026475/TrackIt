@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NEXT_PRIVATE_TARGET = "server"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirects for SPA fallback
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
