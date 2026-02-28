@@ -1,14 +1,11 @@
 [build]
+  base = "trackit"          # The folder containing package.json
   command = "npm run build"
-  publish = ".next"
+  publish = ".next"         # This is relative to the base directory
 
 [build.environment]
   NEXT_PRIVATE_TARGET = "server"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-# Redirects for SPA fallback
 [[redirects]]
   from = "/*"
   to = "/404.html"
