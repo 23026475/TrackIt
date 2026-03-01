@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/app/lib/supabase/client'
 import { Research } from '@/app/types/database'
 import { 
@@ -22,6 +23,7 @@ interface ResearchListProps {
 }
 
 export function ResearchList({ initialResearch = [] }: ResearchListProps) {
+  const router = useRouter()
   const [research, setResearch] = useState<Research[]>(initialResearch)
   const [loading, setLoading] = useState(!initialResearch.length)
   const [searchTerm, setSearchTerm] = useState('')
@@ -75,6 +77,10 @@ export function ResearchList({ initialResearch = [] }: ResearchListProps) {
       case 'methodology': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/50 dark:text-orange-200'
       default: return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
     }
+  }
+
+  const handleResearchClick = (id: string) => {
+    router.push(`/research/${id}`)
   }
 
   if (loading) {
@@ -165,10 +171,10 @@ export function ResearchList({ initialResearch = [] }: ResearchListProps) {
             const Icon = getCategoryIcon(item.category)
             
             return (
-              <Link
+              <div
                 key={item.id}
-                href={`/research/${item.id}`}
-                className="block bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all hover:border-primary"
+                onClick={() => handleResearchClick(item.id)}
+                className="block bg-card border border-border rounded-lg p-6 hover:shadow-lg transition-all hover:border-primary hover:scale-[1.02] cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className={`p-2 rounded-lg ${getCategoryColor(item.category)}`}>
@@ -215,7 +221,7 @@ export function ResearchList({ initialResearch = [] }: ResearchListProps) {
                 <div className="mt-4 text-xs text-muted-foreground">
                   Updated {new Date(item.updated_at).toLocaleDateString()}
                 </div>
-              </Link>
+              </div>
             )
           })}
         </div>
