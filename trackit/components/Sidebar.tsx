@@ -1,4 +1,3 @@
-// components/Sidebar.tsx
 "use client"
 
 import { useState, useEffect } from 'react'
@@ -14,8 +13,7 @@ import {
   LogOut,
   Moon,
   Sun,
-  History,
-  BookOpen
+  History
 } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 import { useTheme } from 'next-themes'
@@ -52,8 +50,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/project', icon: FolderKanban },
-    { name: 'Research', href: '/research', icon: BookOpen },
+    { name: 'Projects', href: '/projects', icon: FolderKanban },
     { name: 'Kanban', href: '/kanban', icon: Calendar },
     { name: 'History', href: '/history', icon: History },
     { name: 'Settings', href: '/settings', icon: Settings },
@@ -63,14 +60,20 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     return userEmail ? userEmail.charAt(0).toUpperCase() : '?'
   }
 
-  // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
     return null
   }
 
   return (
-    <div className={`h-full ${collapsed ? 'w-20' : 'w-64'} bg-card border-r border-border transition-all duration-300 ease-in-out flex flex-col`}>
-      {/* Header Section */}
+    <div 
+      className={`
+        h-screen bg-card border-r border-border
+        transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-[80px]' : 'w-[256px]'}
+        flex flex-col
+      `}
+    >
+      {/* Header Section - Logo and collapse button */}
       <div className={`p-4 border-b border-border ${collapsed ? 'px-2' : ''}`}>
         {!collapsed ? (
           <div className="flex items-center justify-between">
@@ -79,7 +82,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             </span>
             <button
               onClick={() => setCollapsed(true)}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              className="hidden lg:block p-1.5 rounded-lg hover:bg-muted transition-colors"
               title="Collapse sidebar"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -89,16 +92,20 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           <div className="flex justify-center">
             <button
               onClick={() => setCollapsed(false)}
-              className="p-1.5 rounded-lg hover:bg-muted transition-colors"
+              className="hidden lg:block p-1.5 rounded-lg hover:bg-muted transition-colors"
               title="Expand sidebar"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
+            {/* Show logo initial when collapsed */}
+            <span className="lg:hidden text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              T
+            </span>
           </div>
         )}
       </div>
 
-      {/* User Info */}
+      {/* User Info - Below logo */}
       {!collapsed && (
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
