@@ -4,8 +4,11 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { ResearchTasks } from '@/components/ResearchTasks'
 import { ResearchKanban } from '@/components/ResearchKanban'
+import { ResearchFileUpload } from '@/components/ResearchFileUpload'
+import { ResearchFileList } from '@/components/ResearchFileList'
 import { useRouter } from 'next/navigation'
 import { Research, ResearchFile } from '@/app/types/database'
+import { createClient } from '@/app/lib/supabase/client'
 import { 
   ArrowLeft, 
   Edit, 
@@ -18,7 +21,8 @@ import {
   FileSpreadsheet,
   File,
   Link as LinkIcon,
-  ExternalLink
+  ExternalLink,
+  Upload
 } from 'lucide-react'
 
 interface ResearchDetailClientProps {
@@ -28,8 +32,10 @@ interface ResearchDetailClientProps {
 
 export function ResearchDetailClient({ research, initialFiles }: ResearchDetailClientProps) {
   const router = useRouter()
-  const [files] = useState<ResearchFile[]>(initialFiles)
+  const [files, setFiles] = useState<ResearchFile[]>(initialFiles)
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+  const [showFileUpload, setShowFileUpload] = useState(false)
+  const supabase = createClient()
 
   // Safely parse content - it might be a string, JSON, or null
   const renderContent = () => {
@@ -71,19 +77,19 @@ export function ResearchDetailClient({ research, initialFiles }: ResearchDetailC
     }
   }
 
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'image': return <Image className="h-4 w-4" />
-      case 'spreadsheet': return <FileSpreadsheet className="h-4 w-4" />
-      case 'pdf': return <FileText className="h-4 w-4" />
-      default: return <File className="h-4 w-4" />
-    }
+  const handleFileUploadComplete = (newFile: ResearchFile) => {
+    setFiles(prev => [newFile, ...prev])
+    setShowFileUpload(false)
   }
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' B'
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+  const refreshFiles = async () => {
+    const { data } = await supabase
+      .from('research_files')
+      .select('*')
+      .eq('research_id', research.id)
+      .order('created_at', { ascending: false })
+    
+    if (data) setFiles(data)
   }
 
   return (
@@ -154,90 +160,71 @@ export function ResearchDetailClient({ research, initialFiles }: ResearchDetailC
 
       {/* Files Section */}
       <div className="bg-card border border-border rounded-lg p-6">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <FolderOpen className="h-5 w-5" />
-          Attachments ({files.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <FolderOpen className="h-5 w-5" />
+            Attachments ({files.length})
+          </h2>
+          <button
+            onClick={() => setShowFileUpload(!showFileUpload)}
+            className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Upload className="h-4 w-4" />
+            {showFileUpload ? 'Cancel' : 'Upload Files'}
+          </button>
+        </div>
 
-        {files.length > 0 ? (
-          <div className="space-y-2">
-            {files.map((file) => (
-              <div
-                key={file.id}
-                className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
-              >
-                <div className="text-muted-foreground">
-                  {getCategoryIcon(file.category)}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {file.file_name}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{formatFileSize(file.file_size)}</span>
-                    <span>•</span>
-                    <span>{file.cloud_provider || 'local'}</span>
-                  </div>
-                </div>
-
-                {file.cloud_url && (
-                  <a
-                    href={file.cloud_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-background rounded-lg transition-colors"
-                    title="Open file"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
-                )}
-              </div>
-            ))}
+        {showFileUpload && (
+          <div className="mb-6">
+            <ResearchFileUpload
+              researchId={research.id}
+              onUploadComplete={handleFileUploadComplete}
+            />
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground text-center py-8">
-            No files attached yet
-          </p>
         )}
+
+        <ResearchFileList 
+          files={files} 
+          onFileDeleted={refreshFiles}
+        />
       </div>
 
       {/* Tasks Section */}
-<div className="bg-card border border-border rounded-lg p-6">
-  <div className="flex items-center justify-between mb-4">
-    <div className="flex items-center gap-4">
-      <h2 className="text-lg font-semibold">Tasks</h2>
-      <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-        <button
-          onClick={() => setViewMode('list')}
-          className={`px-3 py-1 text-sm rounded-md transition-colors ${
-            viewMode === 'list'
-              ? 'bg-background shadow-sm'
-              : 'hover:bg-background/50'
-          }`}
-        >
-          List
-        </button>
-        <button
-          onClick={() => setViewMode('kanban')}
-          className={`px-3 py-1 text-sm rounded-md transition-colors ${
-            viewMode === 'kanban'
-              ? 'bg-background shadow-sm'
-              : 'hover:bg-background/50'
-          }`}
-        >
-          Kanban
-        </button>
-      </div>
-    </div>
-  </div>
+      <div className="bg-card border border-border rounded-lg p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold">Tasks</h2>
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-background shadow-sm'
+                    : 'hover:bg-background/50'
+                }`}
+              >
+                List
+              </button>
+              <button
+                onClick={() => setViewMode('kanban')}
+                className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                  viewMode === 'kanban'
+                    ? 'bg-background shadow-sm'
+                    : 'hover:bg-background/50'
+                }`}
+              >
+                Kanban
+              </button>
+            </div>
+          </div>
+        </div>
 
-  {viewMode === 'list' ? (
-    <ResearchTasks researchId={research.id} />
-  ) : (
-    <ResearchKanban researchId={research.id} />
-  )}
-</div>
+        {viewMode === 'list' ? (
+          <ResearchTasks researchId={research.id} />
+        ) : (
+          <ResearchKanban researchId={research.id} />
+        )}
+      </div>
     </div>
   )
 }
