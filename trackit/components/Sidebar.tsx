@@ -13,7 +13,8 @@ import {
   LogOut,
   Moon,
   Sun,
-  History
+  History,
+  BookOpen // Added BookOpen icon for Research
 } from 'lucide-react'
 import { createClient } from '@/app/lib/supabase/client'
 import { useTheme } from 'next-themes'
@@ -50,7 +51,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Projects', href: '/projects', icon: FolderKanban },
+    { name: 'Projects', href: '/project', icon: FolderKanban },
+    { name: 'Research', href: '/research', icon: BookOpen }, // Added Research here
     { name: 'Kanban', href: '/kanban', icon: Calendar },
     { name: 'History', href: '/history', icon: History },
     { name: 'Settings', href: '/settings', icon: Settings },
