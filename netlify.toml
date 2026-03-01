@@ -1,9 +1,16 @@
 [build]
-  base = "trackit"
+  base = "trackit"          # The folder containing package.json
   command = "npm run build"
+  publish = ".next"         # This is relative to the base directory
 
 [build.environment]
+  NEXT_PRIVATE_TARGET = "server"
   SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_SUPABASE_URL"
 
+[[redirects]]
+  from = "/*"
+  to = "/404.html"
+  status = 404
+
 [[plugins]]
-  package = "@netlify/plugin-nextjs"
+package = "@netlify/plugin-nextjs"
