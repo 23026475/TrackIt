@@ -1,8 +1,7 @@
-// app/research/page.tsx
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ResearchList } from '../../components/ResearchList'
+import { ResearchList } from '@/components/ResearchList'
 
 export default async function ResearchPage() {
   const cookieStore = await cookies()
@@ -42,7 +41,13 @@ export default async function ResearchPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6 px-2 sm:px-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Research Notes</h1>
+      </div>
+
+      {/* Research List */}
       <ResearchList initialResearch={research || []} />
     </div>
   )
