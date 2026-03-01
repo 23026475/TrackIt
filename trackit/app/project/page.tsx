@@ -245,7 +245,7 @@ export default function ProjectsPage() {
                       {project.tech_stack.slice(0, 2).map((tech) => (
                         <span
                           key={tech}
-                          className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-xs rounded-full"
+                          className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-xs text-gray-800 dark:text-gray-200 rounded-full"
                         >
                           {tech}
                         </span>
