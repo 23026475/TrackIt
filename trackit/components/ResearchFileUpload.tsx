@@ -9,8 +9,13 @@ import {
   Loader2, 
   CheckCircle, 
   AlertCircle,
-  X 
+  X,
+  FileText,
+  Image,
+  FileSpreadsheet,
+  File
 } from 'lucide-react'
+import { uploadResearchFile, getFileCategory, formatFileSize } from '@/app/lib/storage'
 
 interface ResearchFileUploadProps {
   researchId: string
@@ -19,58 +24,88 @@ interface ResearchFileUploadProps {
 
 export function ResearchFileUpload({ researchId, onUploadComplete }: ResearchFileUploadProps) {
   const [uploading, setUploading] = useState(false)
-  const [uploadStatus, setUploadStatus] = useState<Record<string, 'uploading' | 'success' | 'error'>>({})
+  const [uploadQueue, setUploadQueue] = useState<File[]>([])
+  const [uploadStatus, setUploadStatus] = useState<Record<string, {
+    status: 'pending' | 'uploading' | 'success' | 'error'
+    progress?: number
+    error?: string
+  }>>({})
+  
   const supabase = createClient()
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setUploading(true)
+    setUploadQueue(prev => [...prev, ...acceptedFiles])
     
+    // Initialize status for each file
+    const newStatus: Record<string, any> = {}
+    acceptedFiles.forEach(file => {
+      newStatus[file.name] = { status: 'pending' }
+    })
+    setUploadStatus(prev => ({ ...prev, ...newStatus }))
+
+    // Upload each file
     for (const file of acceptedFiles) {
-      const fileId = `${file.name}-${Date.now()}`
-      setUploadStatus(prev => ({ ...prev, [fileId]: 'uploading' }))
+      setUploadStatus(prev => ({
+        ...prev,
+        [file.name]: { status: 'uploading', progress: 0 }
+      }))
 
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) throw new Error('Not authenticated')
+        const category = getFileCategory(file)
+        
+        const result = await uploadResearchFile({
+          researchId,
+          file,
+          category,
+        })
 
-        // For now, we'll just store metadata (you can add cloud storage later)
-        const category = file.type.startsWith('image/') ? 'image' :
-                        file.type.includes('pdf') ? 'pdf' :
-                        file.type.includes('spreadsheet') || file.type.includes('excel') ? 'spreadsheet' :
-                        'document'
-
-        const { data, error } = await supabase
-          .from('research_files')
-          .insert({
-            research_id: researchId,
-            user_id: user.id,
-            file_name: file.name,
-            file_size: file.size,
-            file_type: file.type,
-            category,
-            cloud_provider: 'local',
-            cloud_url: URL.createObjectURL(file), // Temporary URL
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-
-        setUploadStatus(prev => ({ ...prev, [fileId]: 'success' }))
-        onUploadComplete(data)
-      } catch (error) {
-        console.error('Upload failed:', error)
-        setUploadStatus(prev => ({ ...prev, [fileId]: 'error' }))
+        if (result.success && result.data) {
+          setUploadStatus(prev => ({
+            ...prev,
+            [file.name]: { status: 'success' }
+          }))
+          onUploadComplete(result.data)
+        } else {
+          throw new Error(result.error || 'Upload failed')
+        }
+      } catch (error: any) {
+        setUploadStatus(prev => ({
+          ...prev,
+          [file.name]: { 
+            status: 'error', 
+            error: error.message || 'Upload failed'
+          }
+        }))
       }
     }
-    
-    setUploading(false)
-  }, [researchId, supabase, onUploadComplete])
+
+    // Remove from queue after processing
+    setUploadQueue([])
+  }, [researchId, onUploadComplete])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     maxSize: 50 * 1024 * 1024, // 50MB max
   })
+
+  const removeFromQueue = (fileName: string) => {
+    setUploadQueue(prev => prev.filter(f => f.name !== fileName))
+    setUploadStatus(prev => {
+      const newStatus = { ...prev }
+      delete newStatus[fileName]
+      return newStatus
+    })
+  }
+
+  const getFileIcon = (file: File) => {
+    const category = getFileCategory(file)
+    switch (category) {
+      case 'image': return <Image className="h-4 w-4" />
+      case 'spreadsheet': return <FileSpreadsheet className="h-4 w-4" />
+      case 'pdf': return <FileText className="h-4 w-4" />
+      default: return <File className="h-4 w-4" />
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -99,20 +134,50 @@ export function ResearchFileUpload({ researchId, onUploadComplete }: ResearchFil
         )}
       </div>
 
-      {/* Upload status */}
-      {Object.entries(uploadStatus).map(([fileId, status]) => (
-        <div key={fileId} className="flex items-center gap-2 p-2 bg-muted rounded-lg text-sm">
-          {status === 'uploading' && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
-          {status === 'success' && <CheckCircle className="h-4 w-4 text-green-500" />}
-          {status === 'error' && <AlertCircle className="h-4 w-4 text-red-500" />}
-          <span className="flex-1 truncate">{fileId.replace(/-.*$/, '')}</span>
-          {status === 'success' && (
-            <button className="p-1 hover:bg-background rounded">
-              <X className="h-3 w-3" />
-            </button>
-          )}
+      {/* Upload Queue */}
+      {uploadQueue.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium">Uploading...</h4>
+          {uploadQueue.map((file) => {
+            const status = uploadStatus[file.name]
+            
+            return (
+              <div key={file.name} className="flex items-center gap-3 p-3 bg-muted rounded-lg">
+                <div className="text-muted-foreground">
+                  {getFileIcon(file)}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium truncate">{file.name}</p>
+                    <button
+                      onClick={() => removeFromQueue(file.name)}
+                      className="p-1 hover:bg-background rounded"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {formatFileSize(file.size)}
+                  </p>
+                </div>
+
+                <div>
+                  {status?.status === 'uploading' && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                  )}
+                  {status?.status === 'success' && (
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                  )}
+                  {status?.status === 'error' && (
+                    <AlertCircle className="h-4 w-4 text-red-500" />
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </div>
-      ))}
+      )}
     </div>
   )
 }
