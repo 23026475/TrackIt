@@ -313,6 +313,179 @@ export interface Database {
           }
         ]
       }
+      research_files: {
+  Row: {
+    id: string
+    research_id: string
+    user_id: string
+    file_name: string
+    file_size: number
+    file_type: string
+    cloud_provider: 'onedrive' | 'googledrive' | 'dropbox' | 'local' | null
+    cloud_file_id: string | null
+    cloud_url: string | null
+    cloud_metadata: Json
+    category: 'image' | 'document' | 'spreadsheet' | 'pdf' | 'handwritten' | 'other'
+    description: string | null
+    tags: string[]
+    created_at: string
+    updated_at: string
+  }
+  Insert: {
+    id?: string
+    research_id: string
+    user_id: string
+    file_name: string
+    file_size: number
+    file_type: string
+    cloud_provider?: 'onedrive' | 'googledrive' | 'dropbox' | 'local' | null
+    cloud_file_id?: string | null
+    cloud_url?: string | null
+    cloud_metadata?: Json
+    category: 'image' | 'document' | 'spreadsheet' | 'pdf' | 'handwritten' | 'other'
+    description?: string | null
+    tags?: string[]
+    created_at?: string
+    updated_at?: string
+  }
+  Update: {
+    id?: string
+    research_id?: string
+    user_id?: string
+    file_name?: string
+    file_size?: number
+    file_type?: string
+    cloud_provider?: 'onedrive' | 'googledrive' | 'dropbox' | 'local' | null
+    cloud_file_id?: string | null
+    cloud_url?: string | null
+    cloud_metadata?: Json
+    category?: 'image' | 'document' | 'spreadsheet' | 'pdf' | 'handwritten' | 'other'
+    description?: string | null
+    tags?: string[]
+    created_at?: string
+    updated_at?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: "research_files_research_id_fkey"
+      columns: ["research_id"]
+      referencedRelation: "research"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "research_files_user_id_fkey"
+      columns: ["user_id"]
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+  ]
+      }
+      user_cloud_connections: {
+        Row: {
+          id: string
+          user_id: string
+          provider: 'onedrive' | 'googledrive' | 'dropbox'
+          access_token: string
+          refresh_token: string
+          expires_at: number
+          user_email: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          provider: 'onedrive' | 'googledrive' | 'dropbox'
+          access_token: string
+          refresh_token: string
+          expires_at: number
+          user_email: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          provider?: 'onedrive' | 'googledrive' | 'dropbox'
+          access_token?: string
+          refresh_token?: string
+          expires_at?: number
+          user_email?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_cloud_connections_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      research_tasks: {
+  Row: {
+    id: string
+    research_id: string
+    user_id: string
+    title: string
+    description: string | null
+    status: 'todo' | 'in_progress' | 'review' | 'done'
+    priority: 'low' | 'medium' | 'high'
+    position: number
+    labels: string[]
+    due_date: string | null
+    completed_at: string | null
+    created_at: string
+    updated_at: string
+  }
+  Insert: {
+    id?: string
+    research_id: string
+    user_id: string
+    title: string
+    description?: string | null
+    status?: 'todo' | 'in_progress' | 'review' | 'done'
+    priority?: 'low' | 'medium' | 'high'
+    position?: number
+    labels?: string[]
+    due_date?: string | null
+    completed_at?: string | null
+    created_at?: string
+    updated_at?: string
+  }
+  Update: {
+    id?: string
+    research_id?: string
+    user_id?: string
+    title?: string
+    description?: string | null
+    status?: 'todo' | 'in_progress' | 'review' | 'done'
+    priority?: 'low' | 'medium' | 'high'
+    position?: number
+    labels?: string[]
+    due_date?: string | null
+    completed_at?: string | null
+    created_at?: string
+    updated_at?: string
+  }
+  Relationships: [
+    {
+      foreignKeyName: "research_tasks_research_id_fkey"
+      columns: ["research_id"]
+      referencedRelation: "research"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "research_tasks_user_id_fkey"
+      columns: ["user_id"]
+      referencedRelation: "users"
+      referencedColumns: ["id"]
+    }
+  ]
+      }
+
+
     }
     Views: {
       [_ in never]: never
@@ -350,3 +523,15 @@ export type ComponentUpdate = Database['public']['Tables']['components']['Update
 export type Research = Database['public']['Tables']['research']['Row']
 export type ResearchInsert = Database['public']['Tables']['research']['Insert']
 export type ResearchUpdate = Database['public']['Tables']['research']['Update']
+
+export type ResearchFile = Database['public']['Tables']['research_files']['Row']
+export type ResearchFileInsert = Database['public']['Tables']['research_files']['Insert']
+export type ResearchFileUpdate = Database['public']['Tables']['research_files']['Update']
+
+export type UserCloudConnection = Database['public']['Tables']['user_cloud_connections']['Row']
+export type UserCloudConnectionInsert = Database['public']['Tables']['user_cloud_connections']['Insert']
+export type UserCloudConnectionUpdate = Database['public']['Tables']['user_cloud_connections']['Update']
+
+export type ResearchTask = Database['public']['Tables']['research_tasks']['Row']
+export type ResearchTaskInsert = Database['public']['Tables']['research_tasks']['Insert']
+export type ResearchTaskUpdate = Database['public']['Tables']['research_tasks']['Update']
